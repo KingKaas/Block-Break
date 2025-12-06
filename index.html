@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pixel Miner Tycoon</title>
+
+  <!-- Important for mobile scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <!-- Pixel-style font -->
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Press Start 2P", system-ui, sans-serif;
+      background: #111827;
+      color: #f9fafb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    #game {
+      width: 1000px;
+      max-width: 100%;
+      background: #020617;
+      border: 4px solid #fbbf24;
+      box-shadow: 0 0 0 4px #000, 0 10px 0 #000;
+      padding: 16px;
+      image-rendering: pixelated;
+      margin: 8px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 12px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .top-bar span {
+      display: inline-block;
+      padding: 6px 10px;
+      border: 3px solid #fbbf24;
+      background: #0f172a;
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 12px;
+    }
+
+    /* Stone area */
+    #stone-area {
+      border: 4px solid #f97316;
+      background: #020617;
+      padding: 12px;
+      text-align: center;
+    }
+
+    #stone-name {
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    #stone-display {
+      margin: 0 auto 10px auto;
+      width: 220px;
+      height: 220px;
+      border: 4px solid #000;
+      background: #6b7280;
+      box-shadow: inset 0 0 0 4px rgba(0,0,0,0.6);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      touch-action: manipulation; /* helps on mobile */
+    }
+
+    #stone-display:active {
+      transform: translateY(2px);
+      box-shadow: inset 0 0 0 4px rgba(0,0,0,0.8);
+    }
+
+    #stone-cracks {
+      position: absolute;
+      width: 70%;
+      height: 70%;
+      border: 3px dashed rgba(0,0,0,0.35);
+      pointer-events: none;
+    }
+
+    #hp-text {
+      font-size: 10px;
+    }
+
+    .hp-bar-wrapper {
+      width: 100%;
+      border: 3px solid #facc15;
+      height: 18px;
+      background: #4b5563;
+      margin-bottom: 6px;
+    }
+
+    #hp-bar {
+      height: 100%;
+      background: #22c55e;
+      width: 100%;
+    }
+
+    /* Buttons and panels */
+    button {
+      font-family: "Press Start 2P", system-ui, sans-serif;
+      font-size: 10px;
+      padding: 6px 10px;
+      border: 3px solid #000;
+      background: #22c55e;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #064e3b;
+      text-transform: uppercase;
+    }
+
+    button:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #064e3b;
+    }
+
+    button:disabled,
+    button.disabled {
+      background: #4b5563;
+      box-shadow: 0 4px 0 #111827;
+      cursor: not-allowed;
+      color: #9ca3af;
+    }
+
+    .panel {
+      border: 4px solid #38bdf8;
+      background: #020617;
+      padding: 10px;
+      font-size: 10px;
+    }
+
+    .panel h2 {
+      font-size: 10px;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .upgrade {
+      margin-bottom: 8px;
+    }
+
+    .upgrade-title {
+      margin-bottom: 3px;
+    }
+
+    .small-text {
+      font-size: 9px;
+    }
+
+    /* Inventory */
+    #inventory {
+      margin-top: 10px;
+      border-top: 3px solid #4b5563;
+      padding-top: 10px;
+      font-size: 9px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+    }
+
+    th, td {
+      border: 1px solid #374151;
+      padding: 3px 4px;
+      text-align: center;
+    }
+
+    th {
+      background: #111827;
+    }
+
+    .footer {
+      margin-top: 8px;
+      font-size: 8px;
+      text-align: center;
+      color: #9ca3af;
+    }
+
+    /* Responsive layout for smaller screens */
+    @media (max-width: 900px) {
+      body {
+        align-items: flex-start;
+      }
+      #game {
+        transform: scale(0.9);
+        transform-origin: top center;
+      }
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      #game {
+        transform: scale(0.78);
+        transform-origin: top center;
+      }
+
+      .top-bar span {
+        font-size: 10px;
+      }
+
+      button {
+        padding: 10px;
+        font-size: 12px;
+      }
+
+      #stone-display {
+        width: 180px;
+        height: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="game">
+  <div class="top-bar">
+    <span>COINS: <span id="coins">0</span></span>
+    <span>
+      DMG/CLICK: <span id="dmgPerClick">1</span> |
+      AUTO DPS: <span id="autoDps">0</span> |
+      PRICE x<span id="priceMult">1</span>
+    </span>
+    <span>
+      TOTAL EARNED: <span id="totalCoins">0</span>
+    </span>
+  </div>
+
+  <div class="layout">
+    <!-- LEFT: Stone + mining -->
+    <div id="stone-area">
+      <div id="stone-name">Dirt</div>
+      <div id="stone-display" title="Click or tap to mine!">
+        <div id="stone-cracks"></div>
+        <span id="hp-text">10 / 10</span>
+      </div>
+
+      <div class="hp-bar-wrapper">
+        <div id="hp-bar"></div>
+      </div>
+
+      <div class="small-text">
+        Click or tap the block to mine it.<br>
+        When it breaks you get 1 unit of that stone.
+      </div>
+    </div>
+
+    <!-- RIGHT: Upgrades + Inventory -->
+    <div class="panel">
+      <h2>UPGRADES</h2>
+
+      <div class="upgrade">
+        <div class="upgrade-title">
+          Pickaxe Power (Lvl <span id="pickaxeLevel">1</span>)
+        </div>
+        <div class="small-text">
+          +1 damage per click.
+        </div>
+        <button id="buyPickaxeBtn">Buy: <span id="pickaxeCost">20</span> coins</button>
+      </div>
+
+      <div class="upgrade">
+        <div class="upgrade-title">
+          Auto Miner (Lvl <span id="autoLevel">0</span>)
+        </div>
+        <div class="small-text">
+          Mines stones automatically. Each level adds +2 DPS.
+        </div>
+        <button id="buyAutoBtn">Buy: <span id="autoCost">50</span> coins</button>
+      </div>
+
+      <div id="inventory">
+        <h2>INVENTORY</h2>
+        <table>
+          <thead>
+          <tr>
+            <th>Stone</th>
+            <th>Count</th>
+            <th>Price</th>
+            <th>Total</th>
+          </tr>
+          </thead>
+          <tbody id="inventoryBody">
+          <!-- rows added by JS -->
+          </tbody>
+        </table>
+        <button id="sellAllBtn">Sell All</button>
+        <div class="small-text">
+          Tip: Upgrade your pickaxe first,<br>
+          then invest in the auto miner.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Pixel Miner Tycoon – made with HTML + CSS + JavaScript
+  </div>
+</div>
+
+<script>
+  // ========= PLAYER STATE =========
+  const state = {
+    coins: 0,
+    totalEarned: 0,   // total coins collected across all time
+    pickaxeLevel: 1,
+    dmgPerClick: 1,
+    autoLevel: 0,
+    autoDps: 0,
+    pickaxeBaseCost: 20,
+    autoBaseCost: 50
+  };
+
+  // ========= STONE DATA (ALL TYPES) =========
+  const allStoneTypes = [
+    {
+      id: "dirt",
+      name: "Dirt",
+      maxHp: 10,
+      basePrice: 1,
+      color: "#7c5a3a",
+      weight: 40,
+      unlock: () => true
+    },
+    {
+      id: "stone",
+      name: "Stone",
+      maxHp: 30,
+      basePrice: 3,
+      color: "#6b6b6b",
+      weight: 30,
+      unlock: () => true
+    },
+    {
+      id: "iron",
+      name: "Iron Ore",
+      maxHp: 60,
+      basePrice: 8,
+      color: "#a8a8a8",
+      weight: 18,
+      unlock: () => true
+    },
+    {
+      id: "gold",
+      name: "Gold Ore",
+      maxHp: 120,
+      basePrice: 16,
+      color: "#f2d35e",
+      weight: 9,
+      unlock: () => true
+    },
+    {
+      // Normal diamond unlock at pickaxe level 3
+      id: "diamond",
+      name: "Diamond",
+      maxHp: 250,
+      basePrice: 35,
+      color: "#6cf0ff",
+      weight: 4,
+      unlock: () => state.pickaxeLevel >= 3
+    },
+    {
+      // Black Diamond: unlock when all abilities reach level 6
+      id: "blackDiamond",
+      name: "Black Diamond",
+      maxHp: 350,
+      basePrice: 500,
+      color: "#111827",
+      weight: 2,
+      unlock: () => state.pickaxeLevel >= 6 && state.autoLevel >= 6
+    },
+    {
+      // Red Diamond: unlock when all abilities reach level 10
+      id: "redDiamond",
+      name: "Red Diamond",
+      maxHp: 500,
+      basePrice: 1000,
+      color: "#b91c1c",
+      weight: 1,
+      unlock: () => state.pickaxeLevel >= 10 && state.autoLevel >= 10
+    }
+  ];
+
+  // Inventory: id -> count
+  const inventory = {};
+  allStoneTypes.forEach(s => inventory[s.id] = 0);
+
+  // Current stone
+  let currentStone = null;
+
+  // ========= AUDIO (SOUNDS) =========
+  let audioCtx = null;
+
+  function getAudioCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) {
+        audioCtx = new AC();
+      }
+    }
+    return audioCtx;
+  }
+
+  function playBeep(frequency, duration, type = "square", volume = 0.2) {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = type;
+    osc.frequency.value = frequency;
+    gain.gain.value = volume;
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    osc.start(now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.stop(now + duration + 0.02);
+  }
+
+  function playHitSound() {
+    // short, higher click
+    playBeep(500, 0.05, "square", 0.15);
+  }
+
+  function playBreakSound() {
+    // little descending tone
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(300, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.18);
+    gain.gain.value = 0.25;
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    osc.start(now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+    osc.stop(now + 0.25);
+  }
+
+  function playSellSound() {
+    // simple 2-note "cash" sound
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+
+    function tone(freq, startOffset) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.value = freq;
+      gain.gain.value = 0.2;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      const t0 = ctx.currentTime + startOffset;
+      osc.start(t0);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12);
+      osc.stop(t0 + 0.15);
+    }
+
+    tone(600, 0);
+    tone(900, 0.08);
+  }
+
+  // ========= PRICE MULTIPLIER LOGIC =========
+  function getPriceMultiplier() {
+    const t = state.totalEarned;
+    if (t >= 1_000_000) return 6;
+    if (t >= 100_000) return 5;
+    if (t >= 50_000) return 4;
+    if (t >= 10_000) return 3;
+    if (t >= 1_000) return 2;
+    return 1;
+  }
+
+  function getStonePrice(stoneId) {
+    const stone = getStoneById(stoneId);
+    return stone.basePrice * getPriceMultiplier();
+  }
+
+  // ========= DOM ELEMENTS =========
+  const coinsEl = document.getElementById("coins");
+  const totalCoinsEl = document.getElementById("totalCoins");
+  const priceMultEl = document.getElementById("priceMult");
+  const dmgPerClickEl = document.getElementById("dmgPerClick");
+  const autoDpsEl = document.getElementById("autoDps");
+
+  const stoneNameEl = document.getElementById("stone-name");
+  const stoneDisplayEl = document.getElementById("stone-display");
+  const stoneCracksEl = document.getElementById("stone-cracks");
+  const hpTextEl = document.getElementById("hp-text");
+  const hpBarEl = document.getElementById("hp-bar");
+
+  const pickaxeLevelEl = document.getElementById("pickaxeLevel");
+  const pickaxeCostEl = document.getElementById("pickaxeCost");
+  const autoLevelEl = document.getElementById("autoLevel");
+  const autoCostEl = document.getElementById("autoCost");
+
+  const buyPickaxeBtn = document.getElementById("buyPickaxeBtn");
+  const buyAutoBtn = document.getElementById("buyAutoBtn");
+  const sellAllBtn = document.getElementById("sellAllBtn");
+  const inventoryBodyEl = document.getElementById("inventoryBody");
+
+  // ========= UTILS =========
+  function getStoneById(id) {
+    return allStoneTypes.find(s => s.id === id);
+  }
+
+  function getUnlockedStoneTypes() {
+    return allStoneTypes.filter(s => s.unlock());
+  }
+
+  function randomStoneTypeWeighted() {
+    const available = getUnlockedStoneTypes();
+    if (available.length === 0) {
+      // fallback
+      return getStoneById("dirt");
+    }
+    const totalWeight = available.reduce((sum, s) => sum + s.weight, 0);
+    let rand = Math.random() * totalWeight;
+    for (const s of available) {
+      if (rand < s.weight) return s;
+      rand -= s.weight;
+    }
+    return available[0];
+  }
+
+  function spawnNewStone() {
+    const type = randomStoneTypeWeighted();
+    currentStone = {
+      typeId: type.id,
+      maxHp: type.maxHp,
+      hp: type.maxHp
+    };
+    updateStoneDisplay();
+  }
+
+  function updateStoneDisplay() {
+    const type = getStoneById(currentStone.typeId);
+    stoneNameEl.textContent = type.name;
+    stoneDisplayEl.style.backgroundColor = type.color;
+    updateHpBar();
+  }
+
+  function updateHpBar() {
+    const type = getStoneById(currentStone.typeId);
+    const hp = Math.max(0, currentStone.hp);
+    hpTextEl.textContent = `${Math.ceil(hp)} / ${type.maxHp}`;
+    const ratio = hp / type.maxHp;
+    hpBarEl.style.width = (ratio * 100) + "%";
+
+    // Crack effect: more cracks when HP is low
+    const opacity = 1 - ratio;
+    stoneCracksEl.style.opacity = opacity;
+  }
+
+  function updateTopBar() {
+    coinsEl.textContent = Math.floor(state.coins);
+    totalCoinsEl.textContent = Math.floor(state.totalEarned);
+    dmgPerClickEl.textContent = state.dmgPerClick.toFixed(1);
+    autoDpsEl.textContent = state.autoDps.toFixed(1);
+    priceMultEl.textContent = getPriceMultiplier().toFixed(0);
+  }
+
+  function calcPickaxeCost() {
+    return Math.floor(state.pickaxeBaseCost * Math.pow(1.6, state.pickaxeLevel - 1));
+  }
+
+  function calcAutoCost() {
+    return Math.floor(state.autoBaseCost * Math.pow(1.75, state.autoLevel));
+  }
+
+  function updateUpgradePanel() {
+    pickaxeLevelEl.textContent = state.pickaxeLevel;
+    autoLevelEl.textContent = state.autoLevel;
+
+    const pickCost = calcPickaxeCost();
+    const autoCost = calcAutoCost();
+
+    pickaxeCostEl.textContent = pickCost;
+    autoCostEl.textContent = autoCost;
+
+    buyPickaxeBtn.disabled = state.coins < pickCost;
+    buyAutoBtn.disabled = state.coins < autoCost;
+  }
+
+  function updateInventoryTable() {
+    inventoryBodyEl.innerHTML = "";
+    let hasStones = false;
+
+    allStoneTypes.forEach(stone => {
+      const count = inventory[stone.id] || 0;
+      if (count > 0) hasStones = true;
+      const price = getStonePrice(stone.id);
+      const value = count * price;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${stone.name}</td>
+        <td>${count}</td>
+        <td>${price}</td>
+        <td>${value}</td>
+      `;
+      inventoryBodyEl.appendChild(tr);
+    });
+
+    sellAllBtn.disabled = !hasStones;
+  }
+
+  function updateAllUI() {
+    updateTopBar();
+    updateUpgradePanel();
+    updateInventoryTable();
+    updateHpBar();
+  }
+
+  // ========= GAME ACTIONS =========
+  function mineClick() {
+    if (!currentStone) return;
+
+    playHitSound();
+
+    currentStone.hp -= state.dmgPerClick;
+    if (currentStone.hp <= 0) {
+      breakStone();
+    }
+    updateHpBar();
+  }
+
+  function breakStone() {
+    const type = getStoneById(currentStone.typeId);
+
+    playBreakSound();
+
+    // Increase inventory
+    inventory[type.id] = (inventory[type.id] || 0) + 1;
+
+    spawnNewStone();
+    updateInventoryTable();
+  }
+
+  function buyPickaxe() {
+    const cost = calcPickaxeCost();
+    if (state.coins < cost) return;
+
+    state.coins -= cost;
+    state.pickaxeLevel += 1;
+    // damage per click grows slightly faster than level
+    state.dmgPerClick = 1 + (state.pickaxeLevel - 1) * 0.75;
+
+    updateAllUI();
+  }
+
+  function buyAutoMiner() {
+    const cost = calcAutoCost();
+    if (state.coins < cost) return;
+
+    state.coins -= cost;
+    state.autoLevel += 1;
+    state.autoDps = state.autoLevel * 2; // each level +2 DPS
+
+    updateAllUI();
+  }
+
+  function sellAll() {
+    let gained = 0;
+    allStoneTypes.forEach(stone => {
+      const count = inventory[stone.id] || 0;
+      const price = getStonePrice(stone.id);
+      gained += count * price;
+      inventory[stone.id] = 0;
+    });
+    if (gained > 0) {
+      state.coins += gained;
+      state.totalEarned += gained;  // track total money collected
+      playSellSound();
+    }
+    updateAllUI();
+  }
+
+  // Auto miner loop
+  function gameLoop() {
+    if (!currentStone) return;
+
+    const dt = 0.1; // seconds per tick (100 ms)
+    const damage = state.autoDps * dt;
+    if (damage > 0) {
+      currentStone.hp -= damage;
+      if (currentStone.hp <= 0) {
+        breakStone();
+      }
+      updateHpBar();
+    }
+
+    updateUpgradePanel();
+    updateTopBar();
+  }
+
+  // ========= EVENT LISTENERS =========
+  stoneDisplayEl.addEventListener("click", mineClick);
+
+  // Touch support for phones/tablets
+  stoneDisplayEl.addEventListener("touchstart", (e) => {
+    e.preventDefault(); // avoid double-trigger / zoom
+    mineClick();
+  });
+
+  buyPickaxeBtn.addEventListener("click", buyPickaxe);
+  buyAutoBtn.addEventListener("click", buyAutoMiner);
+  sellAllBtn.addEventListener("click", sellAll);
+
+  // ========= INIT =========
+  spawnNewStone();
+  updateAllUI();
+  setInterval(gameLoop, 100); // 10 times per second
+</script>
+
+</body>
+</html>
