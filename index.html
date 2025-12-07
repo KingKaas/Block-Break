@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Pixel Miner Tycoon v8</title>
+  <title>Pixel Miner Tycoon – Single Screen</title>
 
   <!-- Mobile scaling -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Pixel-style font -->
   <link rel="stylesheet"
@@ -26,18 +26,28 @@
       justify-content: center;
       align-items: flex-start;
       min-height: 100vh;
+      overflow-x: hidden; /* no horizontal scroll */
     }
 
+    #game-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 8px;
+    }
+
+    /* Base game size, we will scale it with JS */
     #game {
       width: 1000px;
-      max-width: 100%;
+      height: 640px; /* approx, not exact – just for scaling */
       background: #020617;
       border: 4px solid #fbbf24;
       box-shadow: 0 0 0 4px #000, 0 10px 0 #000;
       padding: 16px;
       image-rendering: pixelated;
-      margin: 8px;
-      position: relative; /* for fireworks */
+      position: relative;
+      transform-origin: top center;
     }
 
     .top-bar {
@@ -116,7 +126,6 @@
       background-image: none;
       opacity: 0;
     }
-
     #stone-cracks.crack-1 {
       background-image:
         repeating-linear-gradient(45deg,
@@ -126,7 +135,6 @@
           transparent 5px);
       opacity: 0.3;
     }
-
     #stone-cracks.crack-2 {
       background-image:
         repeating-linear-gradient(45deg,
@@ -141,7 +149,6 @@
           transparent 5px);
       opacity: 0.45;
     }
-
     #stone-cracks.crack-3 {
       background-image:
         repeating-linear-gradient(45deg,
@@ -161,7 +168,6 @@
           transparent 4px);
       opacity: 0.6;
     }
-
     #stone-cracks.crack-4 {
       background-image:
         repeating-linear-gradient(45deg,
@@ -176,12 +182,11 @@
           transparent 4px),
         repeating-linear-gradient(90deg,
           rgba(0,0,0,0.35) 0px,
-          rgba(0,0,0,0.35) 1px,
+          rgba(0,0,0,0.35) 2px,
           transparent 1px,
           transparent 3px);
       opacity: 0.8;
     }
-
     #stone-cracks.crack-5 {
       background-image:
         repeating-linear-gradient(45deg,
@@ -196,7 +201,7 @@
           transparent 4px),
         repeating-linear-gradient(90deg,
           rgba(0,0,0,0.55) 0px,
-          rgba(0,0,0,0.55) 1px,
+          rgba(0,0,0,0.55) 2px,
           transparent 1px,
           transparent 2px);
       opacity: 1;
@@ -300,8 +305,7 @@
       box-shadow: 0 2px 0 #064e3b;
     }
 
-    button:disabled,
-    button.disabled {
+    button:disabled {
       background: #4b5563;
       box-shadow: 0 4px 0 #111827;
       cursor: not-allowed;
@@ -406,231 +410,202 @@
         opacity: 0;
       }
     }
-
-    /* Responsive layout */
-    @media (max-width: 900px) {
-      body {
-        align-items: flex-start;
-      }
-      #game {
-        transform: scale(0.9);
-        transform-origin: top center;
-      }
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 600px) {
-      #game {
-        transform: scale(0.78);
-        transform-origin: top center;
-      }
-
-      .top-bar span {
-        font-size: 10px;
-      }
-
-      button {
-        padding: 10px;
-        font-size: 12px;
-      }
-
-      #stone-display {
-        width: 180px;
-        height: 180px;
-      }
-    }
   </style>
 </head>
 <body>
 
-<div id="game">
-  <div class="top-bar">
-    <span>COINS: <span id="coins">0.0</span></span>
-    <span>
-      DMG/CLICK: <span id="dmgPerClick">1.0</span> |
-      AUTO DPS: <span id="autoDps">0.0</span> |
-      PRICE x<span id="priceMult">1</span>
-    </span>
-    <span>
-      TOTAL EARNED: <span id="totalCoins">0.0</span>
-    </span>
-    <span>
-      COMBO x<span id="comboText">1.00</span>
-    </span>
-  </div>
+<div id="game-wrapper">
+  <div id="game">
+    <div class="top-bar">
+      <span>COINS: <span id="coins">0.0</span></span>
+      <span>
+        DMG/CLICK: <span id="dmgPerClick">1.0</span> |
+        AUTO DPS: <span id="autoDps">0.0</span> |
+        PRICE x<span id="priceMult">1</span>
+      </span>
+      <span>
+        TOTAL EARNED: <span id="totalCoins">0.0</span>
+      </span>
+      <span>
+        COMBO x<span id="comboText">1.00</span>
+      </span>
+    </div>
 
-  <div class="layout">
-    <!-- LEFT: Stone / Monster + inventory -->
-    <div id="stone-area">
-      <div id="stone-name">Dirt</div>
-      <div id="stone-display" title="Click or tap to mine!">
-        <div id="stone-cracks"></div>
-        <div id="boss-face">😜</div>
-        <span id="hp-text">10 / 10</span>
+    <div class="layout">
+      <!-- LEFT: Stone / Monster + inventory -->
+      <div id="stone-area">
+        <div id="stone-name">Dirt</div>
+        <div id="stone-display" title="Click or tap to mine!">
+          <div id="stone-cracks"></div>
+          <div id="boss-face">😜</div>
+          <span id="hp-text">10 / 10</span>
+        </div>
+
+        <div class="hp-bar-wrapper">
+          <div id="hp-bar"></div>
+        </div>
+
+        <div class="small-text" style="margin-bottom:8px;" id="stoneHint">
+          Click or tap the block to mine it.<br>
+          Each hit gives you coins; boss monsters appear as your power grows.
+        </div>
+
+        <div class="panel" id="inventory">
+          <h2>INVENTORY</h2>
+          <table>
+            <thead>
+            <tr>
+              <th>Stone</th>
+              <th>Count</th>
+              <th>Price</th>
+            </tr>
+            </thead>
+            <tbody id="inventoryBody">
+            </tbody>
+          </table>
+          <div class="small-text">
+            Inventory is for information only – coins come from hits, bosses & missions.
+          </div>
+        </div>
       </div>
 
-      <div class="hp-bar-wrapper">
-        <div id="hp-bar"></div>
-      </div>
+      <!-- RIGHT: Upgrades + Extra Press + Artifacts + Missions -->
+      <div>
+        <div class="panel">
+          <h2>UPGRADES & SKILLS</h2>
 
-      <div class="small-text" style="margin-bottom:8px;" id="stoneHint">
-        Click or tap the block to mine it.<br>
-        Each hit gives you coins; boss monsters appear as your power grows.
-      </div>
+          <div class="upgrade">
+            <div class="upgrade-title">
+              Pickaxe Power (Lvl <span id="pickaxeLevel">1</span>)
+            </div>
+            <div class="small-text">
+              Increases base damage per click.
+            </div>
+            <button id="buyPickaxeBtn">Buy: <span id="pickaxeCost">20</span> coins</button>
+          </div>
 
-      <div class="panel" id="inventory">
-        <h2>INVENTORY</h2>
-        <table>
-          <thead>
-          <tr>
-            <th>Stone</th>
-            <th>Count</th>
-            <th>Price</th>
-          </tr>
-          </thead>
-          <tbody id="inventoryBody">
-          </tbody>
-        </table>
-        <div class="small-text">
-          Inventory is for information only – coins come from hits, bosses & missions.
+          <div class="upgrade">
+            <div class="upgrade-title">
+              Auto Miner (Lvl <span id="autoLevel">0</span>)
+            </div>
+            <div class="small-text">
+              Mines stones automatically (+2 DPS per level).
+            </div>
+            <button id="buyAutoBtn">Buy: <span id="autoCost">25</span> coins</button>
+          </div>
+
+          <div class="upgrade">
+            <div class="upgrade-title">
+              Luck (Lvl <span id="luckLevel">0</span>)
+            </div>
+            <div class="small-text">
+              Increases crit chance, super crit chance and rare stones.
+            </div>
+            <button id="buyLuckBtn">Buy: <span id="luckCost">30</span> coins</button>
+          </div>
+
+          <div class="upgrade">
+            <div class="upgrade-title">
+              Gold Rush
+            </div>
+            <div class="small-text" id="goldRushStatus">
+              Double block value & hit income (except Black/Red Diamond) for 10s.
+              Cooldown 30s.
+            </div>
+            <button id="goldRushBtn">GOLD RUSH</button>
+          </div>
+        </div>
+
+        <div class="panel" id="extraPressPanel">
+          <h2>EXTRA PRESS</h2>
+          <div class="small-text">
+            Level: <span id="extraPressLevel">0</span><br>
+            Presses per hit: x<span id="extraPressMultiplier">1</span><br>
+            Next cost: <span id="extraPressCost">180</span> coins
+          </div>
+          <button id="extraPressBtn">BUY EXTRA PRESS</button>
+          <div class="small-text">
+            Each level adds +1 extra virtual press for clicks & auto miner.<br>
+            Example: Level 2 = 3 presses per hit.
+          </div>
+        </div>
+
+        <div class="panel" id="artifactsPanel">
+          <h2>ARTIFACTS</h2>
+          <div class="small-text" id="artifactList">
+            No artifacts yet. Defeat boss monsters to find powerful relics.
+          </div>
+        </div>
+
+        <div class="panel" id="missionsPanel">
+          <h2>MISSIONS</h2>
+          <ul id="missionList"></ul>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT: Upgrades + Extra Press + Artifacts + Missions -->
-    <div>
-      <div class="panel">
-        <h2>UPGRADES & SKILLS</h2>
-
-        <div class="upgrade">
-          <div class="upgrade-title">
-            Pickaxe Power (Lvl <span id="pickaxeLevel">1</span>)
-          </div>
-          <div class="small-text">
-            Increases base damage per click.
-          </div>
-          <button id="buyPickaxeBtn">Buy: <span id="pickaxeCost">20</span> coins</button>
-        </div>
-
-        <div class="upgrade">
-          <div class="upgrade-title">
-            Auto Miner (Lvl <span id="autoLevel">0</span>)
-          </div>
-          <div class="small-text">
-            Mines stones automatically (+2 DPS per level).
-          </div>
-          <button id="buyAutoBtn">Buy: <span id="autoCost">25</span> coins</button>
-        </div>
-
-        <div class="upgrade">
-          <div class="upgrade-title">
-            Luck (Lvl <span id="luckLevel">0</span>)
-          </div>
-          <div class="small-text">
-            Increases crit chance, super crit chance and rare stones.
-          </div>
-          <button id="buyLuckBtn">Buy: <span id="luckCost">30</span> coins</button>
-        </div>
-
-        <div class="upgrade">
-          <div class="upgrade-title">
-            Gold Rush
-          </div>
-          <div class="small-text" id="goldRushStatus">
-            Double block value & hit income (except Black/Red Diamond) for 10s.
-            Cooldown 30s.
-          </div>
-          <button id="goldRushBtn">GOLD RUSH</button>
-        </div>
-      </div>
-
-      <div class="panel" id="extraPressPanel">
-        <h2>EXTRA PRESS</h2>
-        <div class="small-text">
-          Level: <span id="extraPressLevel">0</span><br>
-          Presses per hit: x<span id="extraPressMultiplier">1</span><br>
-          Next cost: <span id="extraPressCost">180</span> coins
-        </div>
-        <button id="extraPressBtn">BUY EXTRA PRESS</button>
-        <div class="small-text">
-          Each level adds +1 extra virtual press for clicks & auto miner.<br>
-          Example: Level 2 = 3 presses per hit.
-        </div>
-      </div>
-
-      <div class="panel" id="artifactsPanel">
-        <h2>ARTIFACTS</h2>
-        <div class="small-text" id="artifactList">
-          No artifacts yet. Defeat boss monsters to find powerful relics.
-        </div>
-      </div>
-
-      <div class="panel" id="missionsPanel">
-        <h2>MISSIONS</h2>
-        <ul id="missionList"></ul>
-      </div>
+    <div class="footer">
+      Pixel Miner Tycoon – single screen, auto-scaled for any device.
     </div>
-  </div>
-
-  <div class="footer">
-    Pixel Miner Tycoon v8 – Extra Press, Cracking Blocks, Funny Boss Monsters, Criticals, Combos, Gold Rush, Fireworks & per-hit income
   </div>
 </div>
 
 <script>
-  // ========= PLAYER STATE =========
+  /************* RESPONSIVE SCALE TO FIT ANY SCREEN *************/
+  function resizeGame() {
+    const game = document.getElementById('game');
+    // logical base width/height (must match CSS width/height)
+    const baseWidth  = 1000;
+    const baseHeight = 640;
+
+    const availableWidth  = window.innerWidth  - 16; // padding
+    const availableHeight = window.innerHeight - 16;
+
+    const scale = Math.min(
+      availableWidth  / baseWidth,
+      availableHeight / baseHeight,
+      1 // never upscale above original
+    );
+
+    game.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', resizeGame);
+  window.addEventListener('orientationchange', resizeGame);
+  // run once at start
+  resizeGame();
+
+  /************* GAME CODE (same logic as before) *************/
   const state = {
     coins: 0,
-    totalEarned: 0,          // lifetime total
+    totalEarned: 0,
     pickaxeLevel: 1,
-    dmgPerClick: 1,          // base dmg per click
+    dmgPerClick: 1,
     autoLevel: 0,
-    autoDps: 0,              // base auto DPS
+    autoDps: 0,
     luckLevel: 0,
-
-    // Upgrade base costs
     pickaxeBaseCost: 20,
     autoBaseCost: 25,
     luckBaseCost: 30,
-
-    // Extra Press (more expensive now)
     extraPressLevel: 0,
     extraPressBaseCost: 180,
-
-    // combo & crit
     comboCount: 0,
     comboMultiplier: 1,
     lastHitTime: 0,
-
-    // artifacts (from bosses)
-    artifacts: {
-      power: 0,   // boosts click/auto damage
-      fortune: 0, // boosts prices
-      haste: 0    // boosts auto DPS
-    },
-
-    // gold rush
+    artifacts: { power: 0, fortune: 0, haste: 0 },
     goldRushActive: false,
     goldRushDuration: 10,
     goldRushRemaining: 0,
     goldRushCooldown: 30,
     goldRushCooldownRemaining: 0,
-
-    // boss system
-    bossLevel: 0,             // how many bosses defeated
-    bossActive: false,        // currently fighting boss?
-    stonesSinceLastBoss: 0,   // normal blocks broken since last boss
-
-    // stats for missions
+    bossLevel: 0,
+    bossActive: false,
+    stonesSinceLastBoss: 0,
     totalStonesBroken: 0,
     blackDiamondMined: 0
   };
 
   let gameTime = 0;
 
-  // ========= STONE DATA =========
   const allStoneTypes = [
     { id: "dirt", name: "Dirt", maxHp: 10,  basePrice: 1,   color: "#7c5a3a", weight: 40, unlock: () => true },
     { id: "stone", name: "Stone", maxHp: 30, basePrice: 3,   color: "#6b6b6b", weight: 30, unlock: () => true },
@@ -641,28 +616,20 @@
     { id: "diamond", name: "Diamond", maxHp: 250, basePrice: 35, color: "#6cf0ff", weight: 4, unlock: () => state.pickaxeLevel >= 3 },
     { id: "explosive", name: "Explosive Stone", maxHp: 180, basePrice: 25, color: "#ea580c", weight: 3,
       isExplosive: true, unlock: () => state.pickaxeLevel >= 3 || state.autoLevel >= 3 },
-
     { id: "blackDiamond", name: "Black Diamond", maxHp: 350, basePrice: 500, color: "#111827", weight: 2,
       unlock: () => (state.pickaxeLevel >= 10 && state.autoLevel >= 7) ||
                     (state.autoLevel >= 10 && state.pickaxeLevel >= 7) },
-
     { id: "redDiamond", name: "Red Diamond", maxHp: 500, basePrice: 1000, color: "#b91c1c", weight: 1,
       unlock: () => state.pickaxeLevel >= 10 && state.autoLevel >= 10 },
-
-    // boss "type" – stats are dynamic, only used for "Boss Kills" row
     { id: "boss", name: "Boss Monster", maxHp: 1000, basePrice: 0, color: "#7c3aed", weight: 0,
       unlock: () => false }
   ];
 
   const inventory = {};
   allStoneTypes.forEach(s => inventory[s.id] = 0);
-
   let currentStone = null;
   let lastStoneType = null;
 
-  // ========= BOSS & UPGRADE-BASED LOGIC =========
-
-  // how strong the player is
   function getUpgradeScore() {
     return state.pickaxeLevel * 3 +
            state.autoLevel    * 2 +
@@ -670,41 +637,20 @@
            state.extraPressLevel * 3;
   }
 
-  // More bosses now – requirements grow
-  const bossUpgradeRequirements = [
-    5,   10,  18,  26,
-    35,  45,  60,  80,
-    100, 130, 170, 220
-  ];
-
-  // Target boss fight time (seconds) for each boss
-  const bossTargetTimes = [
-    55, 70, 90, 110,
-    145, 190, 260, 280,
-    300, 330, 360, 400
-  ];
+  const bossUpgradeRequirements = [5,10,18,26,35,45,60,80,100,130,170,220];
+  const bossTargetTimes        = [55,70,90,110,145,190,260,280,300,330,360,400];
 
   function shouldSpawnBoss() {
     if (state.bossActive) return false;
     if (state.bossLevel >= bossUpgradeRequirements.length) return false;
-
-    const neededScore = bossUpgradeRequirements[state.bossLevel];
+    const neededScore  = bossUpgradeRequirements[state.bossLevel];
     const currentScore = getUpgradeScore();
-
-    // Need some normal blocks between bosses
     let minStonesBetween = 0;
-    if (state.bossLevel > 0) {
-      // Boss 1: no requirement; Boss 2+ need 25 blocks
-      minStonesBetween = 25;
-    }
-
-    return (
-      currentScore >= neededScore &&
-      state.stonesSinceLastBoss >= minStonesBetween
-    );
+    if (state.bossLevel > 0) minStonesBetween = 25;
+    return (currentScore >= neededScore &&
+            state.stonesSinceLastBoss >= minStonesBetween);
   }
 
-  // ========= MISSIONS =========
   const missions = [
     { id: "stones50",     description: "Break 50 stones",          reward: 500,  completed: false },
     { id: "earn10000",    description: "Earn 10,000 total coins",  reward: 2000, completed: false },
@@ -712,7 +658,6 @@
     { id: "boss3",        description: "Defeat 3 boss monsters",   reward: 10000,completed: false }
   ];
 
-  // ========= AUDIO =========
   let audioCtx = null;
   function getAudioCtx() {
     if (!audioCtx) {
@@ -721,107 +666,61 @@
     }
     return audioCtx;
   }
-
-  function playBeep(freq, dur, type = "square", vol = 0.2) {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.value = vol;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    const now = ctx.currentTime;
-    osc.start(now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-    osc.stop(now + dur + 0.02);
+  function beep(freq,dur,type="square",vol=0.2){
+    const ctx=getAudioCtx(); if(!ctx)return;
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type=type; o.frequency.value=freq; g.gain.value=vol;
+    o.connect(g); g.connect(ctx.destination);
+    const now=ctx.currentTime;
+    o.start(now);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+    o.stop(now+dur+0.02);
+  }
+  function playHitSound(){beep(500,0.05,"square",0.15);}
+  function playGoldRushSound(){beep(900,0.15,"sawtooth",0.25);}
+  function playSuperCritSound(){beep(1300,0.18,"sawtooth",0.3);}
+  function playBreakSound(){
+    const ctx=getAudioCtx(); if(!ctx)return;
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type="triangle";
+    o.frequency.setValueAtTime(300,ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(120,ctx.currentTime+0.18);
+    g.gain.value=0.25; o.connect(g); g.connect(ctx.destination);
+    const now=ctx.currentTime;
+    o.start(now);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+0.2);
+    o.stop(now+0.25);
   }
 
-  function playHitSound()      { playBeep(500, 0.05, "square",   0.15); }
-  function playGoldRushSound() { playBeep(900, 0.15, "sawtooth", 0.25); }
-  function playSuperCritSound(){ playBeep(1300,0.18, "sawtooth", 0.3); }
-
-  function playBreakSound() {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.18);
-    gain.gain.value = 0.25;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    const now = ctx.currentTime;
-    osc.start(now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
-    osc.stop(now + 0.25);
-  }
-
-  function playSellSound() { playBeep(700, 0.12, "square", 0.2); }
-
-  // ========= MULTIPLIERS: PRICE, CRIT, ARTIFACTS =========
-  function getBasePriceMultiplier() {
-    const t = state.totalEarned;
-    if (t >= 1_000_000) return 6;
-    if (t >= 100_000)  return 5;
-    if (t >= 50_000)   return 4;
-    if (t >= 10_000)   return 3;
-    if (t >= 1_000)    return 2;
+  function basePriceMult(){
+    const t=state.totalEarned;
+    if(t>=1_000_000) return 6;
+    if(t>=100_000)  return 5;
+    if(t>=50_000)   return 4;
+    if(t>=10_000)   return 3;
+    if(t>=1_000)    return 2;
     return 1;
   }
-
-  function getArtifactDamageMultiplier() {
-    return 1 + state.artifacts.power * 0.25;
+  function artDmg(){return 1+state.artifacts.power*0.25;}
+  function artAuto(){return 1+state.artifacts.haste*0.30;}
+  function artPrice(){return 1+state.artifacts.fortune*0.15;}
+  function globalPriceMult(){return basePriceMult()*(state.goldRushActive?2:1)*artPrice();}
+  function stonePrice(stone){
+    const base=basePriceMult();
+    let rush=1;
+    if(state.goldRushActive && stone.id!=="blackDiamond" && stone.id!=="redDiamond") rush=2;
+    return stone.basePrice*base*rush*artPrice();
   }
 
-  function getArtifactAutoMultiplier() {
-    return 1 + state.artifacts.haste * 0.30;
-  }
+  function critChance(){return Math.min(0.05+state.luckLevel*0.03,0.4);}
+  function superCritChance(){return Math.min(0.01+state.luckLevel*0.005,0.15);}
 
-  function getArtifactPriceMultiplier() {
-    return 1 + state.artifacts.fortune * 0.15;
-  }
-
-  function getGlobalPriceMultiplier() {
-    const base = getBasePriceMultiplier();
-    const rush = state.goldRushActive ? 2 : 1;
-    const artifacts = getArtifactPriceMultiplier();
-    return base * rush * artifacts;
-  }
-
-  // Stone-specific price (no Gold Rush for black/red diamond)
-  function getStonePrice(stone) {
-    const base = getBasePriceMultiplier();
-    let rush = 1;
-    if (state.goldRushActive &&
-        stone.id !== "blackDiamond" &&
-        stone.id !== "redDiamond") {
-      rush = 2;
-    }
-    const artifacts = getArtifactPriceMultiplier();
-    return stone.basePrice * base * rush * artifacts;
-  }
-
-  function getCritChance() {
-    // base 5% + 3% per luck (max 40%)
-    return Math.min(0.05 + state.luckLevel * 0.03, 0.4);
-  }
-
-  function getSuperCritChance() {
-    // base 1% + 0.5% per luck, cap 15%
-    return Math.min(0.01 + state.luckLevel * 0.005, 0.15);
-  }
-
-  // ========= DOM =========
   const coinsEl       = document.getElementById("coins");
   const totalCoinsEl  = document.getElementById("totalCoins");
   const priceMultEl   = document.getElementById("priceMult");
   const dmgPerClickEl = document.getElementById("dmgPerClick");
   const autoDpsEl     = document.getElementById("autoDps");
   const comboTextEl   = document.getElementById("comboText");
-
   const stoneNameEl   = document.getElementById("stone-name");
   const stoneDisplayEl= document.getElementById("stone-display");
   const stoneCracksEl = document.getElementById("stone-cracks");
@@ -829,2116 +728,462 @@
   const hpTextEl      = document.getElementById("hp-text");
   const hpBarEl       = document.getElementById("hp-bar");
   const stoneHintEl   = document.getElementById("stoneHint");
-
   const pickaxeLevelEl= document.getElementById("pickaxeLevel");
   const pickaxeCostEl = document.getElementById("pickaxeCost");
   const autoLevelEl   = document.getElementById("autoLevel");
   const autoCostEl    = document.getElementById("autoCost");
   const luckLevelEl   = document.getElementById("luckLevel");
   const luckCostEl    = document.getElementById("luckCost");
-
   const buyPickaxeBtn = document.getElementById("buyPickaxeBtn");
   const buyAutoBtn    = document.getElementById("buyAutoBtn");
   const buyLuckBtn    = document.getElementById("buyLuckBtn");
-
   const goldRushBtn   = document.getElementById("goldRushBtn");
   const goldRushStatusEl = document.getElementById("goldRushStatus");
-
   const inventoryBodyEl = document.getElementById("inventoryBody");
   const missionListEl   = document.getElementById("missionList");
-
-  const artifactListEl       = document.getElementById("artifactList");
-  const gameEl               = document.getElementById("game");
-
-  // Extra Press DOM
+  const artifactListEl  = document.getElementById("artifactList");
   const extraPressLevelEl      = document.getElementById("extraPressLevel");
   const extraPressMultiplierEl = document.getElementById("extraPressMultiplier");
   const extraPressCostEl       = document.getElementById("extraPressCost");
   const extraPressBtn          = document.getElementById("extraPressBtn");
+  const gameEl                 = document.getElementById("game");
 
-  // ========= UTILS =========
-  function getStoneById(id) {
-    return allStoneTypes.find(s => s.id === id);
-  }
-
-  function getUnlockedStoneTypes() {
-    return allStoneTypes.filter(s => s.unlock());
-  }
-
-  function getEffectiveWeight(stone) {
-    let w = stone.weight;
-    if (["diamond","blackDiamond","redDiamond","explosive","ruby","emerald"].includes(stone.id)) {
-      w *= (1 + state.luckLevel * 0.4);
+  function stoneById(id){return allStoneTypes.find(s=>s.id===id);}
+  function unlockedStones(){return allStoneTypes.filter(s=>s.unlock());}
+  function effWeight(stone){
+    let w=stone.weight;
+    if(["diamond","blackDiamond","redDiamond","explosive","ruby","emerald"].includes(stone.id)){
+      w*=(1+state.luckLevel*0.4);
     }
     return w;
   }
-
-  function randomStoneTypeWeighted() {
-    const available = getUnlockedStoneTypes().filter(s => s.id !== "boss");
-    if (!available.length) return getStoneById("dirt");
-    const weights = available.map(getEffectiveWeight);
-    const total   = weights.reduce((a,b)=>a+b,0);
-    let r = Math.random()*total;
-    for (let i=0;i<available.length;i++){
-      if (r < weights[i]) return available[i];
-      r -= weights[i];
+  function randomStone(){
+    const avail=unlockedStones().filter(s=>s.id!=="boss");
+    if(!avail.length) return stoneById("dirt");
+    const weights=avail.map(effWeight);
+    const total=weights.reduce((a,b)=>a+b,0);
+    let r=Math.random()*total;
+    for(let i=0;i<avail.length;i++){
+      if(r<weights[i])return avail[i];
+      r-=weights[i];
     }
-    return available[0];
+    return avail[0];
   }
 
-  function spawnBossStone() {
-    state.bossActive = true;
-    const level = state.bossLevel;      // 0-based
-    const displayLevel = level + 1;
-
-    const power = getUpgradeScore();
-    const safePower = Math.max(power, 5);
-
-    const targetTime =
-      bossTargetTimes[Math.min(level, bossTargetTimes.length - 1)];
-
-    // approximate DPS ~ safePower * 2
-    const approxDps = safePower * 2;
-
-    const hp = Math.floor(approxDps * targetTime);
-    const reward = Math.floor(hp * 0.35);
-
-    currentStone = {
-      typeId: "boss",
-      maxHp: hp,
-      hp: hp,
-      payout: 0,
-      isBoss: true,
-      bossReward: reward,
-      bossLevel: displayLevel
-    };
+  function spawnBoss(){
+    state.bossActive=true;
+    const level=state.bossLevel;
+    const displayLevel=level+1;
+    const power=getUpgradeScore();
+    const safePower=Math.max(power,5);
+    const t=bossTargetTimes[Math.min(level,bossTargetTimes.length-1)];
+    const approxDps=safePower*2;
+    const hp=Math.floor(approxDps*t);
+    const reward=Math.floor(hp*0.35);
+    currentStone={typeId:"boss",maxHp:hp,hp:hp,payout:0,isBoss:true,bossReward:reward,bossLevel:displayLevel};
     updateStoneDisplay();
   }
 
-  function spawnNewStone() {
-    if (shouldSpawnBoss()) {
-      spawnBossStone();
-      return;
-    }
-
-    const type = randomStoneTypeWeighted();
-    currentStone = {
-      typeId: type.id,
-      maxHp: type.maxHp,
-      hp: type.maxHp,
-      payout: 0,
-      isBoss: false
-    };
+  function spawnNewStone(){
+    if(shouldSpawnBoss()){spawnBoss();return;}
+    const type=randomStone();
+    currentStone={typeId:type.id,maxHp:type.maxHp,hp:type.maxHp,payout:0,isBoss:false};
     updateStoneDisplay();
   }
 
-  function updateStoneDisplay() {
-    if (!currentStone) return;
-    const type = getStoneById(currentStone.typeId);
-
-    if (currentStone.isBoss) {
-      stoneNameEl.textContent = `BOSS MONSTER Lv ${currentStone.bossLevel}`;
-      stoneHintEl.textContent = "Tap the funny monster until it is destroyed! Huge rewards & artifacts.";
+  function updateStoneDisplay(){
+    if(!currentStone)return;
+    const type=stoneById(currentStone.typeId);
+    if(currentStone.isBoss){
+      stoneNameEl.textContent=`BOSS MONSTER Lv ${currentStone.bossLevel}`;
+      stoneHintEl.textContent="Tap the funny monster until it is destroyed! Huge rewards & artifacts.";
       stoneDisplayEl.classList.add("boss-mode");
-      bossFaceEl.textContent = ["😜","😈","🤪","👹","👾","🤡","😼"][ (currentStone.bossLevel-1) % 7 ];
-      stoneDisplayEl.style.background = "";
-      stoneDisplayEl.style.backgroundColor = "";
-    } else {
-      stoneNameEl.textContent = type.name;
-      stoneHintEl.textContent = "Click or tap the block to mine it. Each hit gives you coins.";
+      bossFaceEl.textContent=["😜","😈","🤪","👹","👾","🤡","😼"][ (currentStone.bossLevel-1)%7 ];
+      stoneDisplayEl.style.background="";
+      stoneDisplayEl.style.backgroundColor="";
+    }else{
+      stoneNameEl.textContent=type.name;
+      stoneHintEl.textContent="Click or tap the block to mine it. Each hit gives you coins.";
       stoneDisplayEl.classList.remove("boss-mode");
-      bossFaceEl.textContent = "";
-      stoneDisplayEl.style.background = "";
-      stoneDisplayEl.style.backgroundColor = type.color || "#6b7280";
+      bossFaceEl.textContent="";
+      stoneDisplayEl.style.background="";
+      stoneDisplayEl.style.backgroundColor=type.color||"#6b7280";
     }
-
     updateHpBar();
   }
 
-  function updateHpBar() {
-    if (!currentStone) return;
-    const hp = Math.max(0, currentStone.hp);
-    const maxHp = currentStone.maxHp;
-    hpTextEl.textContent = `${Math.ceil(hp)} / ${maxHp}`;
-    const ratio = hp / maxHp;
-    hpBarEl.style.width = (ratio*100) + "%";
-
-    // Crack levels: 0–5 based on remaining HP
-    const crackLevel = Math.max(0, Math.min(5, Math.floor((1 - ratio) * 6)));
-    for (let i = 0; i <= 5; i++) {
-      stoneCracksEl.classList.remove("crack-" + i);
-    }
-    stoneCracksEl.classList.add("crack-" + crackLevel);
+  function updateHpBar(){
+    if(!currentStone)return;
+    const hp=Math.max(0,currentStone.hp);
+    const maxHp=currentStone.maxHp;
+    hpTextEl.textContent=`${Math.ceil(hp)} / ${maxHp}`;
+    const ratio=hp/maxHp;
+    hpBarEl.style.width=(ratio*100)+"%";
+    const crackLevel=Math.max(0,Math.min(5,Math.floor((1-ratio)*6)));
+    for(let i=0;i<=5;i++)stoneCracksEl.classList.remove("crack-"+i);
+    stoneCracksEl.classList.add("crack-"+crackLevel);
   }
 
-  function updateTopBar() {
-    coinsEl.textContent      = state.coins.toFixed(1);
-    totalCoinsEl.textContent = state.totalEarned.toFixed(1);
-    dmgPerClickEl.textContent= state.dmgPerClick.toFixed(1);
-    autoDpsEl.textContent    = state.autoDps.toFixed(1);
-    priceMultEl.textContent  = getGlobalPriceMultiplier().toFixed(0);
-    comboTextEl.textContent  = state.comboMultiplier.toFixed(2);
+  function updateTopBar(){
+    coinsEl.textContent=state.coins.toFixed(1);
+    totalCoinsEl.textContent=state.totalEarned.toFixed(1);
+    dmgPerClickEl.textContent=state.dmgPerClick.toFixed(1);
+    autoDpsEl.textContent=state.autoDps.toFixed(1);
+    priceMultEl.textContent=globalPriceMult().toFixed(0);
+    comboTextEl.textContent=state.comboMultiplier.toFixed(2);
   }
 
-  // Upgrade cost formulas
-  function calcPickaxeCost() {
-    return Math.floor(state.pickaxeBaseCost * Math.pow(1.45, state.pickaxeLevel - 1));
-  }
-  function calcAutoCost() {
-    return Math.floor(state.autoBaseCost * Math.pow(1.50, state.autoLevel));
-  }
-  function calcLuckCost() {
-    return Math.floor(state.luckBaseCost * Math.pow(1.60, state.luckLevel));
-  }
-  function calcExtraPressCost() {
-    // More expensive: stronger challenge
-    return Math.floor(state.extraPressBaseCost * Math.pow(1.8, state.extraPressLevel));
-  }
+  function pickCost(){return Math.floor(state.pickaxeBaseCost*Math.pow(1.45,state.pickaxeLevel-1));}
+  function autoCost(){return Math.floor(state.autoBaseCost*Math.pow(1.50,state.autoLevel));}
+  function luckCost(){return Math.floor(state.luckBaseCost*Math.pow(1.60,state.luckLevel));}
+  function extraPressCost(){return Math.floor(state.extraPressBaseCost*Math.pow(1.8,state.extraPressLevel));}
 
-  function updateUpgradePanel() {
-    pickaxeLevelEl.textContent = state.pickaxeLevel;
-    autoLevelEl.textContent    = state.autoLevel;
-    luckLevelEl.textContent    = state.luckLevel;
-
-    const pickCost = calcPickaxeCost();
-    const autoCost = calcAutoCost();
-    const luckCost = calcLuckCost();
-
-    pickaxeCostEl.textContent = pickCost;
-    autoCostEl.textContent    = autoCost;
-    luckCostEl.textContent    = luckCost;
-
-    buyPickaxeBtn.disabled = state.coins < pickCost;
-    buyAutoBtn.disabled    = state.coins < autoCost;
-    buyLuckBtn.disabled    = state.coins < luckCost;
+  function updateUpgrades(){
+    pickaxeLevelEl.textContent=state.pickaxeLevel;
+    autoLevelEl.textContent   =state.autoLevel;
+    luckLevelEl.textContent   =state.luckLevel;
+    const pc=pickCost(), ac=autoCost(), lc=luckCost();
+    pickaxeCostEl.textContent=pc;
+    autoCostEl.textContent   =ac;
+    luckCostEl.textContent   =lc;
+    buyPickaxeBtn.disabled=state.coins<pc;
+    buyAutoBtn.disabled   =state.coins<ac;
+    buyLuckBtn.disabled   =state.coins<lc;
   }
 
-  function updateInventoryTable() {
-    inventoryBodyEl.innerHTML = "";
-    allStoneTypes.forEach(stone => {
-      const count = inventory[stone.id] || 0;
-      const price = getStonePrice(stone);
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${stone.id === "boss" ? "Boss Kills" : stone.name}</td>
+  function updateInventory(){
+    inventoryBodyEl.innerHTML="";
+    allStoneTypes.forEach(stone=>{
+      const count=inventory[stone.id]||0;
+      const price=stonePrice(stone);
+      const tr=document.createElement("tr");
+      tr.innerHTML=`
+        <td>${stone.id==="boss"?"Boss Kills":stone.name}</td>
         <td>${count}</td>
-        <td>${stone.id === "boss" ? "-" : price.toFixed(1)}</td>
-      `;
+        <td>${stone.id==="boss"?"-":price.toFixed(1)}</td>`;
       inventoryBodyEl.appendChild(tr);
     });
   }
 
-  function updateGoldRushUI() {
-    if (state.goldRushActive) {
-      goldRushBtn.disabled = true;
-      goldRushBtn.textContent = "Gold Rush ACTIVE";
-      goldRushStatusEl.textContent =
-        state.goldRushRemaining.toFixed(1) + "s left (x2 for most stones)";
-    } else if (state.goldRushCooldownRemaining > 0) {
-      goldRushBtn.disabled = true;
-      goldRushBtn.textContent = "Cooling";
-      goldRushStatusEl.textContent =
-        Math.ceil(state.goldRushCooldownRemaining) + "s to ready";
-    } else {
-      goldRushBtn.disabled = false;
-      goldRushBtn.textContent = "GOLD RUSH";
-      goldRushStatusEl.textContent =
-        "Double block value & hit income (except Black/Red Diamond) for 10s. Cooldown 30s.";
+  function updateGoldRushUI(){
+    if(state.goldRushActive){
+      goldRushBtn.disabled=true;
+      goldRushBtn.textContent="Gold Rush ACTIVE";
+      goldRushStatusEl.textContent=state.goldRushRemaining.toFixed(1)+"s left (x2 for most stones)";
+    }else if(state.goldRushCooldownRemaining>0){
+      goldRushBtn.disabled=true;
+      goldRushBtn.textContent="Cooling";
+      goldRushStatusEl.textContent=Math.ceil(state.goldRushCooldownRemaining)+"s to ready";
+    }else{
+      goldRushBtn.disabled=false;
+      goldRushBtn.textContent="GOLD RUSH";
+      goldRushStatusEl.textContent="Double block value & hit income (except Black/Red Diamond) for 10s. Cooldown 30s.";
     }
   }
 
-  function updateMissionUI() {
-    missionListEl.innerHTML = "";
-    missions.forEach(m => {
-      const li  = document.createElement("li");
-      const done= m.completed ? " (DONE)" : "";
-      li.className = m.completed ? "mission-done" : "";
-      let progress = "";
-      if (m.id === "stones50") {
-        progress = ` (${state.totalStonesBroken}/50)`;
-      } else if (m.id === "earn10000") {
-        progress = ` (${Math.min(state.totalEarned, 10000).toFixed(1)}/10000)`;
-      } else if (m.id === "blackDiamond1") {
-        progress = ` (${state.blackDiamondMined}/1)`;
-      } else if (m.id === "boss3") {
-        progress = ` (${Math.min(state.bossLevel, 3)}/3)`;
-      }
-      li.textContent =
-        `${m.description} – Reward: ${m.reward}${progress}${done}`;
+  function updateMissions(){
+    missionListEl.innerHTML="";
+    missions.forEach(m=>{
+      const li=document.createElement("li");
+      let progress="";
+      if(m.id==="stones50")progress=` (${state.totalStonesBroken}/50)`;
+      else if(m.id==="earn10000")progress=` (${Math.min(state.totalEarned,10000).toFixed(1)}/10000)`;
+      else if(m.id==="blackDiamond1")progress=` (${state.blackDiamondMined}/1)`;
+      else if(m.id==="boss3")progress=` (${Math.min(state.bossLevel,3)}/3)`;
+      li.className=m.completed?"mission-done":"";
+      li.textContent=`${m.description} – Reward: ${m.reward}${progress}${m.completed?" (DONE)":""}`;
       missionListEl.appendChild(li);
     });
   }
 
-  function updateArtifactsUI() {
-    const { power, fortune, haste } = state.artifacts;
-    if (power === 0 && fortune === 0 && haste === 0) {
-      artifactListEl.textContent =
-        "No artifacts yet. Defeat boss monsters to find powerful relics.";
+  function updateArtifacts(){
+    const {power,fortune,haste}=state.artifacts;
+    if(power===0 && fortune===0 && haste===0){
+      artifactListEl.textContent="No artifacts yet. Defeat boss monsters to find powerful relics.";
       return;
     }
-
-    const lines = [];
-    if (power > 0) {
-      lines.push(`🗡 Artifact of Power x${power} – +${(power*25)}% damage`);
-    }
-    if (fortune > 0) {
-      lines.push(`💰 Artifact of Fortune x${fortune} – +${(fortune*15)}% prices`);
-    }
-    if (haste > 0) {
-      lines.push(`⚙️ Artifact of Haste x${haste} – +${(haste*30)}% auto DPS`);
-    }
-    artifactListEl.innerHTML = lines.join("<br>");
+    const lines=[];
+    if(power>0)  lines.push(`🗡 Artifact of Power x${power} – +${power*25}% damage`);
+    if(fortune>0)lines.push(`💰 Artifact of Fortune x${fortune} – +${fortune*15}% prices`);
+    if(haste>0) lines.push(`⚙️ Artifact of Haste x${haste} – +${haste*30}% auto DPS`);
+    artifactListEl.innerHTML=lines.join("<br>");
   }
 
-  function updateExtraPressUI() {
-    const lvl = state.extraPressLevel;
-    const mult = 1 + lvl;
-    const cost = calcExtraPressCost();
-
-    extraPressLevelEl.textContent = lvl;
-    extraPressMultiplierEl.textContent = mult;
-    extraPressCostEl.textContent = cost;
-
-    extraPressBtn.disabled = state.coins < cost;
+  function updateExtraPressUI(){
+    const lvl=state.extraPressLevel;
+    const mult=1+lvl;
+    const cost=extraPressCost();
+    extraPressLevelEl.textContent=lvl;
+    extraPressMultiplierEl.textContent=mult;
+    extraPressCostEl.textContent=cost;
+    extraPressBtn.disabled=state.coins<cost;
   }
 
-  function updateAllUI() {
+  function updateAll(){
     updateTopBar();
-    updateUpgradePanel();
-    updateInventoryTable();
+    updateUpgrades();
+    updateInventory();
     updateGoldRushUI();
-    updateMissionUI();
-    updateArtifactsUI();
+    updateMissions();
+    updateArtifacts();
     updateExtraPressUI();
     updateHpBar();
   }
 
-  // ========= MISSIONS =========
-  function checkMissions() {
-    missions.forEach(m => {
-      if (m.completed) return;
-      if (m.id === "stones50" && state.totalStonesBroken >= 50) {
-        m.completed = true;
-      } else if (m.id === "earn10000" && state.totalEarned >= 10000) {
-        m.completed = true;
-      } else if (m.id === "blackDiamond1" && state.blackDiamondMined >= 1) {
-        m.completed = true;
-      } else if (m.id === "boss3" && state.bossLevel >= 3) {
-        m.completed = true;
-      }
-      if (m.completed) {
-        state.coins      += m.reward;
-        state.totalEarned += m.reward;
-        playSellSound();
+  function checkMissions(){
+    missions.forEach(m=>{
+      if(m.completed)return;
+      if(m.id==="stones50" && state.totalStonesBroken>=50)m.completed=true;
+      else if(m.id==="earn10000" && state.totalEarned>=10000)m.completed=true;
+      else if(m.id==="blackDiamond1" && state.blackDiamondMined>=1)m.completed=true;
+      else if(m.id==="boss3" && state.bossLevel>=3)m.completed=true;
+      if(m.completed){
+        state.coins+=m.reward;
+        state.totalEarned+=m.reward;
+        beep(700,0.12,"square",0.2);
       }
     });
   }
 
-  // ========= ARTIFACT UNLOCKS =========
-  function unlockArtifactForBoss(level) {
-    if (level === 1) {
-      state.artifacts.power++;
-      playSellSound();
-    } else if (level === 3) {
-      state.artifacts.fortune++;
-      playSellSound();
-    } else if (level === 5) {
-      state.artifacts.haste++;
-      playSellSound();
-    }
-    updateArtifactsUI();
+  function unlockArtifactForBoss(level){
+    if(level===1)state.artifacts.power++;
+    else if(level===3)state.artifacts.fortune++;
+    else if(level===5)state.artifacts.haste++;
+    updateArtifacts();
   }
 
-  // ========= FIREWORKS =========
-  function triggerFireworks() {
-    const colors = ["#facc15","#ef4444","#22c55e","#38bdf8","#e879f9"];
-    for (let i = 0; i < 6; i++) {
-      const fw = document.createElement("div");
-      fw.className = "firework";
-
-      for (let p = 0; p < 12; p++) {
-        const part = document.createElement("span");
-        part.className = "firework-particle";
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 40 + Math.random() * 50;
-        const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist;
-        part.style.setProperty("--dx", dx + "px");
-        part.style.setProperty("--dy", dy + "px");
-        part.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+  function fireworks(){
+    const colors=["#facc15","#ef4444","#22c55e","#38bdf8","#e879f9"];
+    for(let i=0;i<6;i++){
+      const fw=document.createElement("div");
+      fw.className="firework";
+      for(let p=0;p<12;p++){
+        const part=document.createElement("span");
+        part.className="firework-particle";
+        const angle=Math.random()*Math.PI*2;
+        const dist=40+Math.random()*50;
+        const dx=Math.cos(angle)*dist;
+        const dy=Math.sin(angle)*dist;
+        part.style.setProperty("--dx",dx+"px");
+        part.style.setProperty("--dy",dy+"px");
+        part.style.backgroundColor=colors[Math.floor(Math.random()*colors.length)];
         fw.appendChild(part);
       }
-
       gameEl.appendChild(fw);
-      setTimeout(() => fw.remove(), 900);
+      setTimeout(()=>fw.remove(),900);
     }
   }
 
-  // ========= VISUALS =========
-  function showDamageText(amount, critType) {
-    const span = document.createElement("span");
-    let cls = "damage-text";
-    let text = `-${Math.round(amount)}`;
-    if (critType === "crit") {
-      cls += " crit";
-      text = `CRIT ${Math.round(amount)}`;
-    } else if (critType === "super") {
-      cls += " super";
-      text = `X10! ${Math.round(amount)}`;
-    }
-    span.className = cls;
-    span.textContent = text;
+  function showDamage(amount,critType){
+    const span=document.createElement("span");
+    let cls="damage-text";
+    let text=`-${Math.round(amount)}`;
+    if(critType==="crit"){cls+=" crit";text=`CRIT ${Math.round(amount)}`;}
+    else if(critType==="super"){cls+=" super";text=`X10! ${Math.round(amount)}`;}
+    span.className=cls; span.textContent=text;
     stoneDisplayEl.appendChild(span);
-    setTimeout(() => span.remove(), 600);
+    setTimeout(()=>span.remove(),600);
   }
 
-  function triggerShake() {
+  function shake(){
     stoneDisplayEl.classList.remove("shake");
     void stoneDisplayEl.offsetWidth;
     stoneDisplayEl.classList.add("shake");
   }
 
-  // ========= REWARD FOR DAMAGE =========
-  function rewardForDamage(stoneType, damageAmount) {
-    if (!currentStone) return;
-    let totalValue;
-    let maxHp;
-
-    if (currentStone.isBoss) {
-      totalValue = currentStone.bossReward;
-      maxHp = currentStone.maxHp;
-    } else {
-      totalValue = getStonePrice(stoneType);
-      maxHp = stoneType.maxHp;
+  function rewardDamage(stoneType,damage){
+    if(!currentStone)return;
+    let totalValue,maxHp;
+    if(currentStone.isBoss){
+      totalValue=currentStone.bossReward;
+      maxHp=currentStone.maxHp;
+    }else{
+      totalValue=stonePrice(stoneType);
+      maxHp=stoneType.maxHp;
     }
-
-    const share     = totalValue * (damageAmount / maxHp);
-    const remaining = totalValue - currentStone.payout;
-    const payout    = Math.max(0, Math.min(share, remaining));
-
-    if (payout > 0) {
-      state.coins      += payout;
-      state.totalEarned += payout;
-      currentStone.payout += payout;
+    const share=totalValue*(damage/maxHp);
+    const remaining=totalValue-currentStone.payout;
+    const payout=Math.max(0,Math.min(share,remaining));
+    if(payout>0){
+      state.coins+=payout;
+      state.totalEarned+=payout;
+      currentStone.payout+=payout;
     }
   }
 
-  // ========= GAME ACTIONS =========
-  function mineClick() {
-    if (!currentStone) return;
+  function mineClick(){
+    if(!currentStone)return;
     playHitSound();
+    const maxGap=1.2;
+    if(gameTime-state.lastHitTime<=maxGap)state.comboCount++;
+    else state.comboCount=0;
+    state.lastHitTime=gameTime;
+    const comboMul=1+Math.min(state.comboCount,20)*0.05;
+    state.comboMultiplier=comboMul;
 
-    const maxGap = 1.2;
-    if (gameTime - state.lastHitTime <= maxGap) {
-      state.comboCount++;
-    } else {
-      state.comboCount = 0;
-    }
-    state.lastHitTime = gameTime;
-
-    const comboMul = 1 + Math.min(state.comboCount, 20) * 0.05;
-    state.comboMultiplier = comboMul;
-
-    const critChance      = getCritChance();
-    const superCritChance = getSuperCritChance();
-    let critType = null;
-
-    let damage = state.dmgPerClick *
-                 (1 + state.extraPressLevel) *
-                 getArtifactDamageMultiplier();
-
-    if (Math.random() < critChance) {
-      if (Math.random() < superCritChance) {
-        critType = "super";
-        damage *= 10;
-        playSuperCritSound();
-      } else {
-        critType = "crit";
-        damage *= 2.5;
+    let damage=state.dmgPerClick*(1+state.extraPressLevel)*artDmg();
+    let critType=null;
+    if(Math.random()<critChance()){
+      if(Math.random()<superCritChance()){
+        critType="super"; damage*=10; playSuperCritSound();
+      }else{
+        critType="crit"; damage*=2.5;
       }
     }
+    damage*=comboMul;
 
-    damage *= comboMul;
+    const type=stoneById(currentStone.typeId);
+    const actual=Math.min(damage,currentStone.hp);
+    rewardDamage(type,actual);
 
-    const type        = getStoneById(currentStone.typeId);
-    const actualDamage= Math.min(damage, currentStone.hp);
-
-    rewardForDamage(type, actualDamage);
-
-    currentStone.hp -= damage;
-    triggerShake();
-    showDamageText(damage, critType);
-
-    if (currentStone.hp <= 0) {
-      breakStone();
-    }
+    currentStone.hp-=damage;
+    shake();
+    showDamage(damage,critType);
+    if(currentStone.hp<=0)breakStone();
     updateHpBar();
     updateTopBar();
   }
 
-  function handleBossDeath() {
+  function handleBossDeath(){
     playBreakSound();
     state.totalStonesBroken++;
+    state.stonesSinceLastBoss=0;
 
-    // Reset boss spacing counter
-    state.stonesSinceLastBoss = 0;
-
-    // Ensure full payout for boss
-    const diff = currentStone.bossReward - currentStone.payout;
-    if (diff > 0) {
-      state.coins      += diff;
-      state.totalEarned += diff;
-      currentStone.payout += diff;
+    const diff=currentStone.bossReward-currentStone.payout;
+    if(diff>0){
+      state.coins+=diff;
+      state.totalEarned+=diff;
+      currentStone.payout+=diff;
     }
 
-    state.bossActive = false;
+    state.bossActive=false;
     state.bossLevel++;
-
-    // record boss kill in inventory
-    inventory["boss"] = (inventory["boss"] || 0) + 1;
-
+    inventory["boss"]=(inventory["boss"]||0)+1;
     unlockArtifactForBoss(state.bossLevel);
-    triggerFireworks();
-
+    fireworks();
     spawnNewStone();
     checkMissions();
-    updateAllUI();
+    updateAll();
   }
 
-  function breakStone() {
-    if (!currentStone) return;
-
-    if (currentStone.isBoss) {
-      handleBossDeath();
-      return;
-    }
-
-    const type = getStoneById(currentStone.typeId);
+  function breakStone(){
+    if(!currentStone)return;
+    if(currentStone.isBoss){handleBossDeath();return;}
+    const type=stoneById(currentStone.typeId);
     playBreakSound();
-
-    // Ensure full payout for normal stones
-    const expectedPrice = getStonePrice(type);
-    const diff = expectedPrice - currentStone.payout;
-    if (diff > 0) {
-      state.coins      += diff;
-      state.totalEarned += diff;
-      currentStone.payout += diff;
+    const expected=stonePrice(type);
+    const diff=expected-currentStone.payout;
+    if(diff>0){
+      state.coins+=diff;
+      state.totalEarned+=diff;
+      currentStone.payout+=diff;
     }
-
     state.totalStonesBroken++;
-    state.stonesSinceLastBoss++; // count normal block for boss spacing
-
-    if (type.id === "blackDiamond") state.blackDiamondMined++;
-
-    inventory[type.id] = (inventory[type.id] || 0) + 1;
-
-    lastStoneType = type;
+    state.stonesSinceLastBoss++;
+    if(type.id==="blackDiamond")state.blackDiamondMined++;
+    inventory[type.id]=(inventory[type.id]||0)+1;
+    lastStoneType=type;
     spawnNewStone();
-
-    // Explosive chain damage to the next stone
-    if (lastStoneType.isExplosive && currentStone) {
-      const blast = lastStoneType.maxHp * 0.4;
-      const newType = getStoneById(currentStone.typeId);
-      const actualDamage = Math.min(blast, currentStone.hp);
-      rewardForDamage(newType, actualDamage);
-      currentStone.hp -= blast;
-      if (currentStone.hp <= 0) {
-        breakStone();
-        return;
-      }
+    if(lastStoneType.isExplosive && currentStone){
+      const blast=lastStoneType.maxHp*0.4;
+      const newType=stoneById(currentStone.typeId);
+      const actual=Math.min(blast,currentStone.hp);
+      rewardDamage(newType,actual);
+      currentStone.hp-=blast;
+      if(currentStone.hp<=0){breakStone();return;}
     }
-
-    updateInventoryTable();
+    updateInventory();
     checkMissions();
-    updateMissionUI();
+    updateMissions();
   }
 
-  function buyPickaxe() {
-    const cost = calcPickaxeCost();
-    if (state.coins < cost) return;
-    state.coins -= cost;
+  function buyPickaxe(){
+    const cost=pickCost(); if(state.coins<cost)return;
+    state.coins-=cost;
     state.pickaxeLevel++;
-    state.dmgPerClick = 1 + (state.pickaxeLevel - 1) * 0.75;
-    updateAllUI();
+    state.dmgPerClick=1+(state.pickaxeLevel-1)*0.75;
+    updateAll();
   }
-
-  function buyAutoMiner() {
-    const cost = calcAutoCost();
-    if (state.coins < cost) return;
-    state.coins -= cost;
+  function buyAuto(){
+    const cost=autoCost(); if(state.coins<cost)return;
+    state.coins-=cost;
     state.autoLevel++;
-    state.autoDps = state.autoLevel * 2;
-    updateAllUI();
+    state.autoDps=state.autoLevel*2;
+    updateAll();
   }
-
-  function buyLuck() {
-    const cost = calcLuckCost();
-    if (state.coins < cost) return;
-    state.coins -= cost;
+  function buyLuck(){
+    const cost=luckCost(); if(state.coins<cost)return;
+    state.coins-=cost;
     state.luckLevel++;
-    updateAllUI();
+    updateAll();
   }
-
-  function buyExtraPress() {
-    const cost = calcExtraPressCost();
-    if (state.coins < cost) return;
-    state.coins -= cost;
+  function buyExtra(){
+    const cost=extraPressCost(); if(state.coins<cost)return;
+    state.coins-=cost;
     state.extraPressLevel++;
-    updateAllUI();
+    updateAll();
   }
-
-  function startGoldRush() {
-    if (state.goldRushActive || state.goldRushCooldownRemaining > 0) return;
-    state.goldRushActive = true;
-    state.goldRushRemaining = state.goldRushDuration;
-    state.goldRushCooldownRemaining =
-      state.goldRushDuration + state.goldRushCooldown;
+  function startGoldRush(){
+    if(state.goldRushActive||state.goldRushCooldownRemaining>0)return;
+    state.goldRushActive=true;
+    state.goldRushRemaining=state.goldRushDuration;
+    state.goldRushCooldownRemaining=state.goldRushDuration+state.goldRushCooldown;
     playGoldRushSound();
     updateGoldRushUI();
   }
 
-  // ========= LOOP =========
-  function gameLoop() {
-    const dt = 0.1;
-    gameTime += dt;
-
-    // Auto mining
-    if (currentStone) {
-      const damage =
-        state.autoDps *
-        (1 + state.extraPressLevel) *
-        getArtifactAutoMultiplier() *
-        dt;
-
-      if (damage > 0) {
-        const type = getStoneById(currentStone.typeId);
-        const actualDamage = Math.min(damage, currentStone.hp);
-        rewardForDamage(type, actualDamage);
-        currentStone.hp -= damage;
-        if (currentStone.hp <= 0) {
-          breakStone();
-        }
+  function loop(){
+    const dt=0.1;
+    gameTime+=dt;
+    if(currentStone){
+      const damage=state.autoDps*(1+state.extraPressLevel)*artAuto()*dt;
+      if(damage>0){
+        const type=stoneById(currentStone.typeId);
+        const actual=Math.min(damage,currentStone.hp);
+        rewardDamage(type,actual);
+        currentStone.hp-=damage;
+        if(currentStone.hp<=0)breakStone();
         updateHpBar();
       }
     }
-
-    // Combo decay
-    const maxGap = 1.2;
-    if (gameTime - state.lastHitTime > maxGap && state.comboCount > 0) {
-      state.comboCount = 0;
-      state.comboMultiplier = 1;
+    const maxGap=1.2;
+    if(gameTime-state.lastHitTime>maxGap && state.comboCount>0){
+      state.comboCount=0;
+      state.comboMultiplier=1;
     }
-
-    // Gold Rush timers
-    if (state.goldRushActive) {
-      state.goldRushRemaining -= dt;
-      if (state.goldRushRemaining <= 0) {
-        state.goldRushActive = false;
-        state.goldRushRemaining = 0;
+    if(state.goldRushActive){
+      state.goldRushRemaining-=dt;
+      if(state.goldRushRemaining<=0){
+        state.goldRushActive=false;
+        state.goldRushRemaining=0;
       }
     }
-    if (state.goldRushCooldownRemaining > 0) {
-      state.goldRushCooldownRemaining -= dt;
-      if (state.goldRushCooldownRemaining < 0)
-        state.goldRushCooldownRemaining = 0;
+    if(state.goldRushCooldownRemaining>0){
+      state.goldRushCooldownRemaining-=dt;
+      if(state.goldRushCooldownRemaining<0)state.goldRushCooldownRemaining=0;
     }
-
     updateGoldRushUI();
     updateTopBar();
-    updateUpgradePanel();
+    updateUpgrades();
     updateExtraPressUI();
   }
 
-  // ========= EVENTS =========
-  stoneDisplayEl.addEventListener("click", mineClick);
-  stoneDisplayEl.addEventListener("touchstart", e => {
-    e.preventDefault();
-    mineClick();
-  });
+  stoneDisplayEl.addEventListener("click",mineClick);
+  stoneDisplayEl.addEventListener("touchstart",e=>{e.preventDefault();mineClick();});
+  buyPickaxeBtn.addEventListener("click",buyPickaxe);
+  buyAutoBtn.addEventListener("click",buyAuto);
+  buyLuckBtn.addEventListener("click",buyLuck);
+  goldRushBtn.addEventListener("click",startGoldRush);
+  extraPressBtn.addEventListener("click",buyExtra);
 
-  buyPickaxeBtn.addEventListener("click", buyPickaxe);
-  buyAutoBtn.addEventListener("click", buyAutoMiner);
-  buyLuckBtn.addEventListener("click", buyLuck);
-  goldRushBtn.addEventListener("click", startGoldRush);
-  extraPressBtn.addEventListener("click", buyExtraPress);
-
-  // ========= INIT =========
-  spawnNewStone();
-  updateAllUI();
-  setInterval(gameLoop, 100);
+  function init(){
+    spawnNewStone();
+    updateAll();
+    setInterval(loop,100);
+  }
+  init();
 </script>
 
 </body>
 </html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Pixel Miner Tycoon v8</title>
 
-  <!-- Mobile scaling -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-
-  <!-- Pixel-style font -->
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: "Press Start 2P", system-ui, sans-serif;
-      background: #111827;
-      color: #f9fafb;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
-
-    #game {
-      width: 1000px;
-      max-width: 100%;
-      background: #020617;
-      border: 4px solid #fbbf24;
-      box-shadow: 0 0 0 4px #000, 0 10px 0 #000;
-      padding: 16px;
-      image-rendering: pixelated;
-      margin: 8px;
-      position: relative; /* for fireworks */
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      font-size: 12px;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .top-bar span {
-      display: inline-block;
-      padding: 6px 10px;
-      border: 3px solid #fbbf24;
-      background: #0f172a;
-      white-space: nowrap;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: 12px;
-    }
-
-    /* Stone / Monster area */
-    #stone-area {
-      border: 4px solid #f97316;
-      background: #020617;
-      padding: 12px;
-      text-align: center;
-    }
-
-    #stone-name {
-      font-size: 12px;
-      margin-bottom: 8px;
-    }
-
-    #stone-display {
-      margin: 0 auto 10px auto;
-      width: 220px;
-      height: 220px;
-      border: 4px solid #000;
-      background: #6b7280;
-      box-shadow: inset 0 0 0 4px rgba(0,0,0,0.6);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      touch-action: manipulation;
-      overflow: hidden;
-      transition: border-radius 0.2s, background 0.2s;
-    }
-
-    /* Boss monster look */
-    #stone-display.boss-mode {
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #f9fafb 0 8px, #7c3aed 12px 80px, #4c1d95 80px 140px);
-      box-shadow: inset 0 0 0 4px rgba(0,0,0,0.7);
-    }
-
-    #stone-cracks {
-      position: absolute;
-      width: 80%;
-      height: 80%;
-      pointer-events: none;
-      background-size: cover;
-      background-repeat: no-repeat;
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-
-    /* Crack levels (more lines each step) */
-    #stone-cracks.crack-0 {
-      background-image: none;
-      opacity: 0;
-    }
-
-    #stone-cracks.crack-1 {
-      background-image:
-        repeating-linear-gradient(45deg,
-          rgba(0,0,0,0.25) 0px,
-          rgba(0,0,0,0.25) 2px,
-          transparent 2px,
-          transparent 5px);
-      opacity: 0.3;
-    }
-
-    #stone-cracks.crack-2 {
-      background-image:
-        repeating-linear-gradient(45deg,
-          rgba(0,0,0,0.35) 0px,
-          rgba(0,0,0,0.35) 2px,
-          transparent 2px,
-          transparent 5px),
-        repeating-linear-gradient(-45deg,
-          rgba(0,0,0,0.25) 0px,
-          rgba(0,0,0,0.25) 2px,
-          transparent 2px,
-          transparent 5px);
-      opacity: 0.45;
-    }
-
-    #stone-cracks.crack-3 {
-      background-image:
-        repeating-linear-gradient(45deg,
-          rgba(0,0,0,0.45) 0px,
-          rgba(0,0,0,0.45) 2px,
-          transparent 2px,
-          transparent 5px),
-        repeating-linear-gradient(-45deg,
-          rgba(0,0,0,0.35) 0px,
-          rgba(0,0,0,0.35) 2px,
-          transparent 2px,
-          transparent 5px),
-        repeating-linear-gradient(90deg,
-          rgba(0,0,0,0.25) 0px,
-          rgba(0,0,0,0.25) 1px,
-          transparent 1px,
-          transparent 4px);
-      opacity: 0.6;
-    }
-
-    #stone-cracks.crack-4 {
-      background-image:
-        repeating-linear-gradient(45deg,
-          rgba(0,0,0,0.55) 0px,
-          rgba(0,0,0,0.55) 2px,
-          transparent 2px,
-          transparent 4px),
-        repeating-linear-gradient(-45deg,
-          rgba(0,0,0,0.45) 0px,
-          rgba(0,0,0,0.45) 2px,
-          transparent 2px,
-          transparent 4px),
-        repeating-linear-gradient(90deg,
-          rgba(0,0,0,0.35) 0px,
-          rgba(0,0,0,0.35) 1px,
-          transparent 1px,
-          transparent 3px);
-      opacity: 0.8;
-    }
-
-    #stone-cracks.crack-5 {
-      background-image:
-        repeating-linear-gradient(45deg,
-          rgba(0,0,0,0.75) 0px,
-          rgba(0,0,0,0.75) 2px,
-          transparent 2px,
-          transparent 4px),
-        repeating-linear-gradient(-45deg,
-          rgba(0,0,0,0.65) 0px,
-          rgba(0,0,0,0.65) 2px,
-          transparent 2px,
-          transparent 4px),
-        repeating-linear-gradient(90deg,
-          rgba(0,0,0,0.55) 0px,
-          rgba(0,0,0,0.55) 1px,
-          transparent 1px,
-          transparent 2px);
-      opacity: 1;
-    }
-
-    #boss-face {
-      position: absolute;
-      font-size: 52px;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s, transform 0.2s;
-      transform: translateY(4px);
-    }
-
-    #stone-display.boss-mode #boss-face {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    #hp-text {
-      font-size: 10px;
-      z-index: 1;
-      position: relative;
-      text-shadow: 0 0 4px #000;
-    }
-
-    .hp-bar-wrapper {
-      width: 100%;
-      border: 3px solid #facc15;
-      height: 18px;
-      background: #4b5563;
-      margin-bottom: 6px;
-    }
-
-    #hp-bar {
-      height: 100%;
-      background: #22c55e;
-      width: 100%;
-    }
-
-    /* Damage floating text */
-    .damage-text {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 10px;
-      color: #facc15;
-      pointer-events: none;
-      animation: floatUp 0.6s ease-out forwards;
-      text-shadow: 0 0 4px #000;
-    }
-
-    .damage-text.crit {
-      color: #f97316;
-    }
-
-    .damage-text.super {
-      color: #22d3ee;
-      text-shadow: 0 0 6px #0ea5e9;
-    }
-
-    @keyframes floatUp {
-      from {
-        opacity: 1;
-        transform: translate(-50%, -50%);
-      }
-      to {
-        opacity: 0;
-        transform: translate(-50%, -80%);
-      }
-    }
-
-    /* Shake animation */
-    @keyframes shake {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(-2px, 1px); }
-      50% { transform: translate(2px, -1px); }
-      75% { transform: translate(-1px, 2px); }
-      100% { transform: translate(0, 0); }
-    }
-
-    #stone-display.shake {
-      animation: shake 0.15s;
-    }
-
-    /* Buttons and panels */
-    button {
-      font-family: "Press Start 2P", system-ui, sans-serif;
-      font-size: 10px;
-      padding: 6px 10px;
-      border: 3px solid #000;
-      background: #22c55e;
-      cursor: pointer;
-      box-shadow: 0 4px 0 #064e3b;
-      text-transform: uppercase;
-    }
-
-    button:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #064e3b;
-    }
-
-    button:disabled,
-    button.disabled {
-      background: #4b5563;
-      box-shadow: 0 4px 0 #111827;
-      cursor: not-allowed;
-      color: #9ca3af;
-    }
-
-    .panel {
-      border: 4px solid #38bdf8;
-      background: #020617;
-      padding: 10px;
-      font-size: 10px;
-      margin-bottom: 10px;
-    }
-
-    .panel h2 {
-      font-size: 10px;
-      margin-top: 0;
-      margin-bottom: 8px;
-    }
-
-    .upgrade {
-      margin-bottom: 8px;
-    }
-
-    .upgrade-title {
-      margin-bottom: 3px;
-    }
-
-    .small-text {
-      font-size: 9px;
-    }
-
-    /* Inventory (under the block) */
-    #inventory {
-      margin-top: 10px;
-      font-size: 9px;
-      text-align: left;
-    }
-
-    #inventory table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 8px;
-    }
-
-    #inventory th, #inventory td {
-      border: 1px solid #374151;
-      padding: 3px 4px;
-      text-align: center;
-    }
-
-    #inventory th {
-      background: #111827;
-    }
-
-    .footer {
-      margin-top: 8px;
-      font-size: 8px;
-      text-align: center;
-      color: #9ca3af;
-    }
-
-    /* Missions */
-    #missionList {
-      list-style: none;
-      padding-left: 0;
-      margin: 0;
-    }
-
-    #missionList li {
-      margin-bottom: 4px;
-    }
-
-    .mission-done {
-      color: #4ade80;
-    }
-
-    /* Fireworks */
-    .firework {
-      position: absolute;
-      left: 50%;
-      top: 35%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-
-    .firework-particle {
-      position: absolute;
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      animation: fireworkMove 0.8s ease-out forwards;
-    }
-
-    @keyframes fireworkMove {
-      from {
-        transform: translate(0, 0);
-        opacity: 1;
-      }
-      to {
-        transform: translate(var(--dx), var(--dy));
-        opacity: 0;
-      }
-    }
-
-    /* Responsive layout */
-    @media (max-width: 900px) {
-      body {
-        align-items: flex-start;
-      }
-      #game {
-        transform: scale(0.9);
-        transform-origin: top center;
-      }
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 600px) {
-      #game {
-        transform: scale(0.78);
-        transform-origin: top center;
-      }
-
-      .top-bar span {
-        font-size: 10px;
-      }
-
-      button {
-        padding: 10px;
-        font-size: 12px;
-      }
-
-      #stone-display {
-        width: 180px;
-        height: 180px;
-      }
-    }
-  </style>
-</head>
-<body>
-
-<div id="game">
-  <div class="top-bar">
-    <span>COINS: <span id="coins">0.0</span></span>
-    <span>
-      DMG/CLICK: <span id="dmgPerClick">1.0</span> |
-      AUTO DPS: <span id="autoDps">0.0</span> |
-      PRICE x<span id="priceMult">1</span>
-    </span>
-    <span>
-      TOTAL EARNED: <span id="totalCoins">0.0</span>
-    </span>
-    <span>
-      COMBO x<span id="comboText">1.00</span>
-    </span>
-  </div>
-
-  <div class="layout">
-    <!-- LEFT: Stone / Monster + inventory -->
-    <div id="stone-area">
-      <div id="stone-name">Dirt</div>
-      <div id="stone-display" title="Click or tap to mine!">
-        <div id="stone-cracks"></div>
-        <div id="boss-face">😜</div>
-        <span id="hp-text">10 / 10</span>
-      </div>
-
-      <div class="hp-bar-wrapper">
-        <div id="hp-bar"></div>
-      </div>
-
-      <div class="small-text" style="margin-bottom:8px;" id="stoneHint">
-        Click or tap the block to mine it.<br>
-        Each hit gives you coins; boss monsters appear as your power grows.
-      </div>
-
-      <div class="panel" id="inventory">
-        <h2>INVENTORY</h2>
-        <table>
-          <thead>
-          <tr>
-            <th>Stone</th>
-            <th>Count</th>
-            <th>Price</th>
-          </tr>
-          </thead>
-          <tbody id="inventoryBody">
-          </tbody>
-        </table>
-        <div class="small-text">
-          Inventory is for information only – coins come from hits, bosses & missions.
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT: Upgrades + Extra Press + Artifacts + Missions -->
-    <div>
-      <div class="panel">
-        <h2>UPGRADES & SKILLS</h2>
-
-        <div class="upgrade">
-          <div class="upgrade-title">
-            Pickaxe Power (Lvl <span id="pickaxeLevel">1</span>)
-          </div>
-          <div class="small-text">
-            Increases base damage per click.
-          </div>
-          <button id="buyPickaxeBtn">Buy: <span id="pickaxeCost">20</span> coins</button>
-        </div>
-
-        <div class="upgrade">
-          <div class="upgrade-title">
-            Auto Miner (Lvl <span id="autoLevel">0</span>)
-          </div>
-          <div class="small-text">
-            Mines stones automatically (+2 DPS per level).
-          </div>
-          <button id="buyAutoBtn">Buy: <span id="autoCost">25</span> coins</button>
-        </div>
-
-        <div class="upgrade">
-          <div class="upgrade-title">
-            Luck (Lvl <span id="luckLevel">0</span>)
-          </div>
-          <div class="small-text">
-            Increases crit chance, super crit chance and rare stones.
-          </div>
-          <button id="buyLuckBtn">Buy: <span id="luckCost">30</span> coins</button>
-        </div>
-
-        <div class="upgrade">
-          <div class="upgrade-title">
-            Gold Rush
-          </div>
-          <div class="small-text" id="goldRushStatus">
-            Double block value & hit income (except Black/Red Diamond) for 10s.
-            Cooldown 30s.
-          </div>
-          <button id="goldRushBtn">GOLD RUSH</button>
-        </div>
-      </div>
-
-      <div class="panel" id="extraPressPanel">
-        <h2>EXTRA PRESS</h2>
-        <div class="small-text">
-          Level: <span id="extraPressLevel">0</span><br>
-          Presses per hit: x<span id="extraPressMultiplier">1</span><br>
-          Next cost: <span id="extraPressCost">180</span> coins
-        </div>
-        <button id="extraPressBtn">BUY EXTRA PRESS</button>
-        <div class="small-text">
-          Each level adds +1 extra virtual press for clicks & auto miner.<br>
-          Example: Level 2 = 3 presses per hit.
-        </div>
-      </div>
-
-      <div class="panel" id="artifactsPanel">
-        <h2>ARTIFACTS</h2>
-        <div class="small-text" id="artifactList">
-          No artifacts yet. Defeat boss monsters to find powerful relics.
-        </div>
-      </div>
-
-      <div class="panel" id="missionsPanel">
-        <h2>MISSIONS</h2>
-        <ul id="missionList"></ul>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    Pixel Miner Tycoon v8 – Extra Press, Cracking Blocks, Funny Boss Monsters, Criticals, Combos, Gold Rush, Fireworks & per-hit income
-  </div>
-</div>
-
-<script>
-  // ========= PLAYER STATE =========
-  const state = {
-    coins: 0,
-    totalEarned: 0,          // lifetime total
-    pickaxeLevel: 1,
-    dmgPerClick: 1,          // base dmg per click
-    autoLevel: 0,
-    autoDps: 0,              // base auto DPS
-    luckLevel: 0,
-
-    // Upgrade base costs
-    pickaxeBaseCost: 20,
-    autoBaseCost: 25,
-    luckBaseCost: 30,
-
-    // Extra Press (more expensive now)
-    extraPressLevel: 0,
-    extraPressBaseCost: 180,
-
-    // combo & crit
-    comboCount: 0,
-    comboMultiplier: 1,
-    lastHitTime: 0,
-
-    // artifacts (from bosses)
-    artifacts: {
-      power: 0,   // boosts click/auto damage
-      fortune: 0, // boosts prices
-      haste: 0    // boosts auto DPS
-    },
-
-    // gold rush
-    goldRushActive: false,
-    goldRushDuration: 10,
-    goldRushRemaining: 0,
-    goldRushCooldown: 30,
-    goldRushCooldownRemaining: 0,
-
-    // boss system
-    bossLevel: 0,             // how many bosses defeated
-    bossActive: false,        // currently fighting boss?
-    stonesSinceLastBoss: 0,   // normal blocks broken since last boss
-
-    // stats for missions
-    totalStonesBroken: 0,
-    blackDiamondMined: 0
-  };
-
-  let gameTime = 0;
-
-  // ========= STONE DATA =========
-  const allStoneTypes = [
-    { id: "dirt", name: "Dirt", maxHp: 10,  basePrice: 1,   color: "#7c5a3a", weight: 40, unlock: () => true },
-    { id: "stone", name: "Stone", maxHp: 30, basePrice: 3,   color: "#6b6b6b", weight: 30, unlock: () => true },
-    { id: "iron", name: "Iron Ore", maxHp: 60, basePrice: 8, color: "#a8a8a8", weight: 18, unlock: () => true },
-    { id: "gold", name: "Gold Ore", maxHp: 120, basePrice: 16, color: "#f2d35e", weight: 9, unlock: () => true },
-    { id: "ruby", name: "Ruby Ore", maxHp: 200, basePrice: 60, color: "#e11d48", weight: 3, unlock: () => state.pickaxeLevel >= 4 },
-    { id: "emerald", name: "Emerald Ore", maxHp: 220, basePrice: 70, color: "#059669", weight: 3, unlock: () => state.pickaxeLevel >= 5 && state.luckLevel >= 1 },
-    { id: "diamond", name: "Diamond", maxHp: 250, basePrice: 35, color: "#6cf0ff", weight: 4, unlock: () => state.pickaxeLevel >= 3 },
-    { id: "explosive", name: "Explosive Stone", maxHp: 180, basePrice: 25, color: "#ea580c", weight: 3,
-      isExplosive: true, unlock: () => state.pickaxeLevel >= 3 || state.autoLevel >= 3 },
-
-    { id: "blackDiamond", name: "Black Diamond", maxHp: 350, basePrice: 500, color: "#111827", weight: 2,
-      unlock: () => (state.pickaxeLevel >= 10 && state.autoLevel >= 7) ||
-                    (state.autoLevel >= 10 && state.pickaxeLevel >= 7) },
-
-    { id: "redDiamond", name: "Red Diamond", maxHp: 500, basePrice: 1000, color: "#b91c1c", weight: 1,
-      unlock: () => state.pickaxeLevel >= 10 && state.autoLevel >= 10 },
-
-    // boss "type" – stats are dynamic, only used for "Boss Kills" row
-    { id: "boss", name: "Boss Monster", maxHp: 1000, basePrice: 0, color: "#7c3aed", weight: 0,
-      unlock: () => false }
-  ];
-
-  const inventory = {};
-  allStoneTypes.forEach(s => inventory[s.id] = 0);
-
-  let currentStone = null;
-  let lastStoneType = null;
-
-  // ========= BOSS & UPGRADE-BASED LOGIC =========
-
-  // how strong the player is
-  function getUpgradeScore() {
-    return state.pickaxeLevel * 3 +
-           state.autoLevel    * 2 +
-           state.luckLevel    * 1 +
-           state.extraPressLevel * 3;
-  }
-
-  // More bosses now – requirements grow
-  const bossUpgradeRequirements = [
-    5,   10,  18,  26,
-    35,  45,  60,  80,
-    100, 130, 170, 220
-  ];
-
-  // Target boss fight time (seconds) for each boss
-  const bossTargetTimes = [
-    55, 70, 90, 110,
-    145, 190, 260, 280,
-    300, 330, 360, 400
-  ];
-
-  function shouldSpawnBoss() {
-    if (state.bossActive) return false;
-    if (state.bossLevel >= bossUpgradeRequirements.length) return false;
-
-    const neededScore = bossUpgradeRequirements[state.bossLevel];
-    const currentScore = getUpgradeScore();
-
-    // Need some normal blocks between bosses
-    let minStonesBetween = 0;
-    if (state.bossLevel > 0) {
-      // Boss 1: no requirement; Boss 2+ need 25 blocks
-      minStonesBetween = 25;
-    }
-
-    return (
-      currentScore >= neededScore &&
-      state.stonesSinceLastBoss >= minStonesBetween
-    );
-  }
-
-  // ========= MISSIONS =========
-  const missions = [
-    { id: "stones50",     description: "Break 50 stones",          reward: 500,  completed: false },
-    { id: "earn10000",    description: "Earn 10,000 total coins",  reward: 2000, completed: false },
-    { id: "blackDiamond1",description: "Mine 1 Black Diamond",     reward: 5000, completed: false },
-    { id: "boss3",        description: "Defeat 3 boss monsters",   reward: 10000,completed: false }
-  ];
-
-  // ========= AUDIO =========
-  let audioCtx = null;
-  function getAudioCtx() {
-    if (!audioCtx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) audioCtx = new AC();
-    }
-    return audioCtx;
-  }
-
-  function playBeep(freq, dur, type = "square", vol = 0.2) {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.value = vol;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    const now = ctx.currentTime;
-    osc.start(now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-    osc.stop(now + dur + 0.02);
-  }
-
-  function playHitSound()      { playBeep(500, 0.05, "square",   0.15); }
-  function playGoldRushSound() { playBeep(900, 0.15, "sawtooth", 0.25); }
-  function playSuperCritSound(){ playBeep(1300,0.18, "sawtooth", 0.3); }
-
-  function playBreakSound() {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(300, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.18);
-    gain.gain.value = 0.25;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    const now = ctx.currentTime;
-    osc.start(now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
-    osc.stop(now + 0.25);
-  }
-
-  function playSellSound() { playBeep(700, 0.12, "square", 0.2); }
-
-  // ========= MULTIPLIERS: PRICE, CRIT, ARTIFACTS =========
-  function getBasePriceMultiplier() {
-    const t = state.totalEarned;
-    if (t >= 1_000_000) return 6;
-    if (t >= 100_000)  return 5;
-    if (t >= 50_000)   return 4;
-    if (t >= 10_000)   return 3;
-    if (t >= 1_000)    return 2;
-    return 1;
-  }
-
-  function getArtifactDamageMultiplier() {
-    return 1 + state.artifacts.power * 0.25;
-  }
-
-  function getArtifactAutoMultiplier() {
-    return 1 + state.artifacts.haste * 0.30;
-  }
-
-  function getArtifactPriceMultiplier() {
-    return 1 + state.artifacts.fortune * 0.15;
-  }
-
-  function getGlobalPriceMultiplier() {
-    const base = getBasePriceMultiplier();
-    const rush = state.goldRushActive ? 2 : 1;
-    const artifacts = getArtifactPriceMultiplier();
-    return base * rush * artifacts;
-  }
-
-  // Stone-specific price (no Gold Rush for black/red diamond)
-  function getStonePrice(stone) {
-    const base = getBasePriceMultiplier();
-    let rush = 1;
-    if (state.goldRushActive &&
-        stone.id !== "blackDiamond" &&
-        stone.id !== "redDiamond") {
-      rush = 2;
-    }
-    const artifacts = getArtifactPriceMultiplier();
-    return stone.basePrice * base * rush * artifacts;
-  }
-
-  function getCritChance() {
-    // base 5% + 3% per luck (max 40%)
-    return Math.min(0.05 + state.luckLevel * 0.03, 0.4);
-  }
-
-  function getSuperCritChance() {
-    // base 1% + 0.5% per luck, cap 15%
-    return Math.min(0.01 + state.luckLevel * 0.005, 0.15);
-  }
-
-  // ========= DOM =========
-  const coinsEl       = document.getElementById("coins");
-  const totalCoinsEl  = document.getElementById("totalCoins");
-  const priceMultEl   = document.getElementById("priceMult");
-  const dmgPerClickEl = document.getElementById("dmgPerClick");
-  const autoDpsEl     = document.getElementById("autoDps");
-  const comboTextEl   = document.getElementById("comboText");
-
-  const stoneNameEl   = document.getElementById("stone-name");
-  const stoneDisplayEl= document.getElementById("stone-display");
-  const stoneCracksEl = document.getElementById("stone-cracks");
-  const bossFaceEl    = document.getElementById("boss-face");
-  const hpTextEl      = document.getElementById("hp-text");
-  const hpBarEl       = document.getElementById("hp-bar");
-  const stoneHintEl   = document.getElementById("stoneHint");
-
-  const pickaxeLevelEl= document.getElementById("pickaxeLevel");
-  const pickaxeCostEl = document.getElementById("pickaxeCost");
-  const autoLevelEl   = document.getElementById("autoLevel");
-  const autoCostEl    = document.getElementById("autoCost");
-  const luckLevelEl   = document.getElementById("luckLevel");
-  const luckCostEl    = document.getElementById("luckCost");
-
-  const buyPickaxeBtn = document.getElementById("buyPickaxeBtn");
-  const buyAutoBtn    = document.getElementById("buyAutoBtn");
-  const buyLuckBtn    = document.getElementById("buyLuckBtn");
-
-  const goldRushBtn   = document.getElementById("goldRushBtn");
-  const goldRushStatusEl = document.getElementById("goldRushStatus");
-
-  const inventoryBodyEl = document.getElementById("inventoryBody");
-  const missionListEl   = document.getElementById("missionList");
-
-  const artifactListEl       = document.getElementById("artifactList");
-  const gameEl               = document.getElementById("game");
-
-  // Extra Press DOM
-  const extraPressLevelEl      = document.getElementById("extraPressLevel");
-  const extraPressMultiplierEl = document.getElementById("extraPressMultiplier");
-  const extraPressCostEl       = document.getElementById("extraPressCost");
-  const extraPressBtn          = document.getElementById("extraPressBtn");
-
-  // ========= UTILS =========
-  function getStoneById(id) {
-    return allStoneTypes.find(s => s.id === id);
-  }
-
-  function getUnlockedStoneTypes() {
-    return allStoneTypes.filter(s => s.unlock());
-  }
-
-  function getEffectiveWeight(stone) {
-    let w = stone.weight;
-    if (["diamond","blackDiamond","redDiamond","explosive","ruby","emerald"].includes(stone.id)) {
-      w *= (1 + state.luckLevel * 0.4);
-    }
-    return w;
-  }
-
-  function randomStoneTypeWeighted() {
-    const available = getUnlockedStoneTypes().filter(s => s.id !== "boss");
-    if (!available.length) return getStoneById("dirt");
-    const weights = available.map(getEffectiveWeight);
-    const total   = weights.reduce((a,b)=>a+b,0);
-    let r = Math.random()*total;
-    for (let i=0;i<available.length;i++){
-      if (r < weights[i]) return available[i];
-      r -= weights[i];
-    }
-    return available[0];
-  }
-
-  function spawnBossStone() {
-    state.bossActive = true;
-    const level = state.bossLevel;      // 0-based
-    const displayLevel = level + 1;
-
-    const power = getUpgradeScore();
-    const safePower = Math.max(power, 5);
-
-    const targetTime =
-      bossTargetTimes[Math.min(level, bossTargetTimes.length - 1)];
-
-    // approximate DPS ~ safePower * 2
-    const approxDps = safePower * 2;
-
-    const hp = Math.floor(approxDps * targetTime);
-    const reward = Math.floor(hp * 0.35);
-
-    currentStone = {
-      typeId: "boss",
-      maxHp: hp,
-      hp: hp,
-      payout: 0,
-      isBoss: true,
-      bossReward: reward,
-      bossLevel: displayLevel
-    };
-    updateStoneDisplay();
-  }
-
-  function spawnNewStone() {
-    if (shouldSpawnBoss()) {
-      spawnBossStone();
-      return;
-    }
-
-    const type = randomStoneTypeWeighted();
-    currentStone = {
-      typeId: type.id,
-      maxHp: type.maxHp,
-      hp: type.maxHp,
-      payout: 0,
-      isBoss: false
-    };
-    updateStoneDisplay();
-  }
-
-  function updateStoneDisplay() {
-    if (!currentStone) return;
-    const type = getStoneById(currentStone.typeId);
-
-    if (currentStone.isBoss) {
-      stoneNameEl.textContent = `BOSS MONSTER Lv ${currentStone.bossLevel}`;
-      stoneHintEl.textContent = "Tap the funny monster until it is destroyed! Huge rewards & artifacts.";
-      stoneDisplayEl.classList.add("boss-mode");
-      bossFaceEl.textContent = ["😜","😈","🤪","👹","👾","🤡","😼"][ (currentStone.bossLevel-1) % 7 ];
-      stoneDisplayEl.style.background = "";
-      stoneDisplayEl.style.backgroundColor = "";
-    } else {
-      stoneNameEl.textContent = type.name;
-      stoneHintEl.textContent = "Click or tap the block to mine it. Each hit gives you coins.";
-      stoneDisplayEl.classList.remove("boss-mode");
-      bossFaceEl.textContent = "";
-      stoneDisplayEl.style.background = "";
-      stoneDisplayEl.style.backgroundColor = type.color || "#6b7280";
-    }
-
-    updateHpBar();
-  }
-
-  function updateHpBar() {
-    if (!currentStone) return;
-    const hp = Math.max(0, currentStone.hp);
-    const maxHp = currentStone.maxHp;
-    hpTextEl.textContent = `${Math.ceil(hp)} / ${maxHp}`;
-    const ratio = hp / maxHp;
-    hpBarEl.style.width = (ratio*100) + "%";
-
-    // Crack levels: 0–5 based on remaining HP
-    const crackLevel = Math.max(0, Math.min(5, Math.floor((1 - ratio) * 6)));
-    for (let i = 0; i <= 5; i++) {
-      stoneCracksEl.classList.remove("crack-" + i);
-    }
-    stoneCracksEl.classList.add("crack-" + crackLevel);
-  }
-
-  function updateTopBar() {
-    coinsEl.textContent      = state.coins.toFixed(1);
-    totalCoinsEl.textContent = state.totalEarned.toFixed(1);
-    dmgPerClickEl.textContent= state.dmgPerClick.toFixed(1);
-    autoDpsEl.textContent    = state.autoDps.toFixed(1);
-    priceMultEl.textContent  = getGlobalPriceMultiplier().toFixed(0);
-    comboTextEl.textContent  = state.comboMultiplier.toFixed(2);
-  }
-
-  // Upgrade cost formulas
-  function calcPickaxeCost() {
-    return Math.floor(state.pickaxeBaseCost * Math.pow(1.45, state.pickaxeLevel - 1));
-  }
-  function calcAutoCost() {
-    return Math.floor(state.autoBaseCost * Math.pow(1.50, state.autoLevel));
-  }
-  function calcLuckCost() {
-    return Math.floor(state.luckBaseCost * Math.pow(1.60, state.luckLevel));
-  }
-  function calcExtraPressCost() {
-    // More expensive: stronger challenge
-    return Math.floor(state.extraPressBaseCost * Math.pow(1.8, state.extraPressLevel));
-  }
-
-  function updateUpgradePanel() {
-    pickaxeLevelEl.textContent = state.pickaxeLevel;
-    autoLevelEl.textContent    = state.autoLevel;
-    luckLevelEl.textContent    = state.luckLevel;
-
-    const pickCost = calcPickaxeCost();
-    const autoCost = calcAutoCost();
-    const luckCost = calcLuckCost();
-
-    pickaxeCostEl.textContent = pickCost;
-    autoCostEl.textContent    = autoCost;
-    luckCostEl.textContent    = luckCost;
-
-    buyPickaxeBtn.disabled = state.coins < pickCost;
-    buyAutoBtn.disabled    = state.coins < autoCost;
-    buyLuckBtn.disabled    = state.coins < luckCost;
-  }
-
-  function updateInventoryTable() {
-    inventoryBodyEl.innerHTML = "";
-    allStoneTypes.forEach(stone => {
-      const count = inventory[stone.id] || 0;
-      const price = getStonePrice(stone);
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${stone.id === "boss" ? "Boss Kills" : stone.name}</td>
-        <td>${count}</td>
-        <td>${stone.id === "boss" ? "-" : price.toFixed(1)}</td>
-      `;
-      inventoryBodyEl.appendChild(tr);
-    });
-  }
-
-  function updateGoldRushUI() {
-    if (state.goldRushActive) {
-      goldRushBtn.disabled = true;
-      goldRushBtn.textContent = "Gold Rush ACTIVE";
-      goldRushStatusEl.textContent =
-        state.goldRushRemaining.toFixed(1) + "s left (x2 for most stones)";
-    } else if (state.goldRushCooldownRemaining > 0) {
-      goldRushBtn.disabled = true;
-      goldRushBtn.textContent = "Cooling";
-      goldRushStatusEl.textContent =
-        Math.ceil(state.goldRushCooldownRemaining) + "s to ready";
-    } else {
-      goldRushBtn.disabled = false;
-      goldRushBtn.textContent = "GOLD RUSH";
-      goldRushStatusEl.textContent =
-        "Double block value & hit income (except Black/Red Diamond) for 10s. Cooldown 30s.";
-    }
-  }
-
-  function updateMissionUI() {
-    missionListEl.innerHTML = "";
-    missions.forEach(m => {
-      const li  = document.createElement("li");
-      const done= m.completed ? " (DONE)" : "";
-      li.className = m.completed ? "mission-done" : "";
-      let progress = "";
-      if (m.id === "stones50") {
-        progress = ` (${state.totalStonesBroken}/50)`;
-      } else if (m.id === "earn10000") {
-        progress = ` (${Math.min(state.totalEarned, 10000).toFixed(1)}/10000)`;
-      } else if (m.id === "blackDiamond1") {
-        progress = ` (${state.blackDiamondMined}/1)`;
-      } else if (m.id === "boss3") {
-        progress = ` (${Math.min(state.bossLevel, 3)}/3)`;
-      }
-      li.textContent =
-        `${m.description} – Reward: ${m.reward}${progress}${done}`;
-      missionListEl.appendChild(li);
-    });
-  }
-
-  function updateArtifactsUI() {
-    const { power, fortune, haste } = state.artifacts;
-    if (power === 0 && fortune === 0 && haste === 0) {
-      artifactListEl.textContent =
-        "No artifacts yet. Defeat boss monsters to find powerful relics.";
-      return;
-    }
-
-    const lines = [];
-    if (power > 0) {
-      lines.push(`🗡 Artifact of Power x${power} – +${(power*25)}% damage`);
-    }
-    if (fortune > 0) {
-      lines.push(`💰 Artifact of Fortune x${fortune} – +${(fortune*15)}% prices`);
-    }
-    if (haste > 0) {
-      lines.push(`⚙️ Artifact of Haste x${haste} – +${(haste*30)}% auto DPS`);
-    }
-    artifactListEl.innerHTML = lines.join("<br>");
-  }
-
-  function updateExtraPressUI() {
-    const lvl = state.extraPressLevel;
-    const mult = 1 + lvl;
-    const cost = calcExtraPressCost();
-
-    extraPressLevelEl.textContent = lvl;
-    extraPressMultiplierEl.textContent = mult;
-    extraPressCostEl.textContent = cost;
-
-    extraPressBtn.disabled = state.coins < cost;
-  }
-
-  function updateAllUI() {
-    updateTopBar();
-    updateUpgradePanel();
-    updateInventoryTable();
-    updateGoldRushUI();
-    updateMissionUI();
-    updateArtifactsUI();
-    updateExtraPressUI();
-    updateHpBar();
-  }
-
-  // ========= MISSIONS =========
-  function checkMissions() {
-    missions.forEach(m => {
-      if (m.completed) return;
-      if (m.id === "stones50" && state.totalStonesBroken >= 50) {
-        m.completed = true;
-      } else if (m.id === "earn10000" && state.totalEarned >= 10000) {
-        m.completed = true;
-      } else if (m.id === "blackDiamond1" && state.blackDiamondMined >= 1) {
-        m.completed = true;
-      } else if (m.id === "boss3" && state.bossLevel >= 3) {
-        m.completed = true;
-      }
-      if (m.completed) {
-        state.coins      += m.reward;
-        state.totalEarned += m.reward;
-        playSellSound();
-      }
-    });
-  }
-
-  // ========= ARTIFACT UNLOCKS =========
-  function unlockArtifactForBoss(level) {
-    if (level === 1) {
-      state.artifacts.power++;
-      playSellSound();
-    } else if (level === 3) {
-      state.artifacts.fortune++;
-      playSellSound();
-    } else if (level === 5) {
-      state.artifacts.haste++;
-      playSellSound();
-    }
-    updateArtifactsUI();
-  }
-
-  // ========= FIREWORKS =========
-  function triggerFireworks() {
-    const colors = ["#facc15","#ef4444","#22c55e","#38bdf8","#e879f9"];
-    for (let i = 0; i < 6; i++) {
-      const fw = document.createElement("div");
-      fw.className = "firework";
-
-      for (let p = 0; p < 12; p++) {
-        const part = document.createElement("span");
-        part.className = "firework-particle";
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 40 + Math.random() * 50;
-        const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist;
-        part.style.setProperty("--dx", dx + "px");
-        part.style.setProperty("--dy", dy + "px");
-        part.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-        fw.appendChild(part);
-      }
-
-      gameEl.appendChild(fw);
-      setTimeout(() => fw.remove(), 900);
-    }
-  }
-
-  // ========= VISUALS =========
-  function showDamageText(amount, critType) {
-    const span = document.createElement("span");
-    let cls = "damage-text";
-    let text = `-${Math.round(amount)}`;
-    if (critType === "crit") {
-      cls += " crit";
-      text = `CRIT ${Math.round(amount)}`;
-    } else if (critType === "super") {
-      cls += " super";
-      text = `X10! ${Math.round(amount)}`;
-    }
-    span.className = cls;
-    span.textContent = text;
-    stoneDisplayEl.appendChild(span);
-    setTimeout(() => span.remove(), 600);
-  }
-
-  function triggerShake() {
-    stoneDisplayEl.classList.remove("shake");
-    void stoneDisplayEl.offsetWidth;
-    stoneDisplayEl.classList.add("shake");
-  }
-
-  // ========= REWARD FOR DAMAGE =========
-  function rewardForDamage(stoneType, damageAmount) {
-    if (!currentStone) return;
-    let totalValue;
-    let maxHp;
-
-    if (currentStone.isBoss) {
-      totalValue = currentStone.bossReward;
-      maxHp = currentStone.maxHp;
-    } else {
-      totalValue = getStonePrice(stoneType);
-      maxHp = stoneType.maxHp;
-    }
-
-    const share     = totalValue * (damageAmount / maxHp);
-    const remaining = totalValue - currentStone.payout;
-    const payout    = Math.max(0, Math.min(share, remaining));
-
-    if (payout > 0) {
-      state.coins      += payout;
-      state.totalEarned += payout;
-      currentStone.payout += payout;
-    }
-  }
-
-  // ========= GAME ACTIONS =========
-  function mineClick() {
-    if (!currentStone) return;
-    playHitSound();
-
-    const maxGap = 1.2;
-    if (gameTime - state.lastHitTime <= maxGap) {
-      state.comboCount++;
-    } else {
-      state.comboCount = 0;
-    }
-    state.lastHitTime = gameTime;
-
-    const comboMul = 1 + Math.min(state.comboCount, 20) * 0.05;
-    state.comboMultiplier = comboMul;
-
-    const critChance      = getCritChance();
-    const superCritChance = getSuperCritChance();
-    let critType = null;
-
-    let damage = state.dmgPerClick *
-                 (1 + state.extraPressLevel) *
-                 getArtifactDamageMultiplier();
-
-    if (Math.random() < critChance) {
-      if (Math.random() < superCritChance) {
-        critType = "super";
-        damage *= 10;
-        playSuperCritSound();
-      } else {
-        critType = "crit";
-        damage *= 2.5;
-      }
-    }
-
-    damage *= comboMul;
-
-    const type        = getStoneById(currentStone.typeId);
-    const actualDamage= Math.min(damage, currentStone.hp);
-
-    rewardForDamage(type, actualDamage);
-
-    currentStone.hp -= damage;
-    triggerShake();
-    showDamageText(damage, critType);
-
-    if (currentStone.hp <= 0) {
-      breakStone();
-    }
-    updateHpBar();
-    updateTopBar();
-  }
-
-  function handleBossDeath() {
-    playBreakSound();
-    state.totalStonesBroken++;
-
-    // Reset boss spacing counter
-    state.stonesSinceLastBoss = 0;
-
-    // Ensure full payout for boss
-    const diff = currentStone.bossReward - currentStone.payout;
-    if (diff > 0) {
-      state.coins      += diff;
-      state.totalEarned += diff;
-      currentStone.payout += diff;
-    }
-
-    state.bossActive = false;
-    state.bossLevel++;
-
-    // record boss kill in inventory
-    inventory["boss"] = (inventory["boss"] || 0) + 1;
-
-    unlockArtifactForBoss(state.bossLevel);
-    triggerFireworks();
-
-    spawnNewStone();
-    checkMissions();
-    updateAllUI();
-  }
-
-  function breakStone() {
-    if (!currentStone) return;
-
-    if (currentStone.isBoss) {
-      handleBossDeath();
-      return;
-    }
-
-    const type = getStoneById(currentStone.typeId);
-    playBreakSound();
-
-    // Ensure full payout for normal stones
-    const expectedPrice = getStonePrice(type);
-    const diff = expectedPrice - currentStone.payout;
-    if (diff > 0) {
-      state.coins      += diff;
-      state.totalEarned += diff;
-      currentStone.payout += diff;
-    }
-
-    state.totalStonesBroken++;
-    state.stonesSinceLastBoss++; // count normal block for boss spacing
-
-    if (type.id === "blackDiamond") state.blackDiamondMined++;
-
-    inventory[type.id] = (inventory[type.id] || 0) + 1;
-
-    lastStoneType = type;
-    spawnNewStone();
-
-    // Explosive chain damage to the next stone
-    if (lastStoneType.isExplosive && currentStone) {
-      const blast = lastStoneType.maxHp * 0.4;
-      const newType = getStoneById(currentStone.typeId);
-      const actualDamage = Math.min(blast, currentStone.hp);
-      rewardForDamage(newType, actualDamage);
-      currentStone.hp -= blast;
-      if (currentStone.hp <= 0) {
-        breakStone();
-        return;
-      }
-    }
-
-    updateInventoryTable();
-    checkMissions();
-    updateMissionUI();
-  }
-
-  function buyPickaxe() {
-    const cost = calcPickaxeCost();
-    if (state.coins < cost) return;
-    state.coins -= cost;
-    state.pickaxeLevel++;
-    state.dmgPerClick = 1 + (state.pickaxeLevel - 1) * 0.75;
-    updateAllUI();
-  }
-
-  function buyAutoMiner() {
-    const cost = calcAutoCost();
-    if (state.coins < cost) return;
-    state.coins -= cost;
-    state.autoLevel++;
-    state.autoDps = state.autoLevel * 2;
-    updateAllUI();
-  }
-
-  function buyLuck() {
-    const cost = calcLuckCost();
-    if (state.coins < cost) return;
-    state.coins -= cost;
-    state.luckLevel++;
-    updateAllUI();
-  }
-
-  function buyExtraPress() {
-    const cost = calcExtraPressCost();
-    if (state.coins < cost) return;
-    state.coins -= cost;
-    state.extraPressLevel++;
-    updateAllUI();
-  }
-
-  function startGoldRush() {
-    if (state.goldRushActive || state.goldRushCooldownRemaining > 0) return;
-    state.goldRushActive = true;
-    state.goldRushRemaining = state.goldRushDuration;
-    state.goldRushCooldownRemaining =
-      state.goldRushDuration + state.goldRushCooldown;
-    playGoldRushSound();
-    updateGoldRushUI();
-  }
-
-  // ========= LOOP =========
-  function gameLoop() {
-    const dt = 0.1;
-    gameTime += dt;
-
-    // Auto mining
-    if (currentStone) {
-      const damage =
-        state.autoDps *
-        (1 + state.extraPressLevel) *
-        getArtifactAutoMultiplier() *
-        dt;
-
-      if (damage > 0) {
-        const type = getStoneById(currentStone.typeId);
-        const actualDamage = Math.min(damage, currentStone.hp);
-        rewardForDamage(type, actualDamage);
-        currentStone.hp -= damage;
-        if (currentStone.hp <= 0) {
-          breakStone();
-        }
-        updateHpBar();
-      }
-    }
-
-    // Combo decay
-    const maxGap = 1.2;
-    if (gameTime - state.lastHitTime > maxGap && state.comboCount > 0) {
-      state.comboCount = 0;
-      state.comboMultiplier = 1;
-    }
-
-    // Gold Rush timers
-    if (state.goldRushActive) {
-      state.goldRushRemaining -= dt;
-      if (state.goldRushRemaining <= 0) {
-        state.goldRushActive = false;
-        state.goldRushRemaining = 0;
-      }
-    }
-    if (state.goldRushCooldownRemaining > 0) {
-      state.goldRushCooldownRemaining -= dt;
-      if (state.goldRushCooldownRemaining < 0)
-        state.goldRushCooldownRemaining = 0;
-    }
-
-    updateGoldRushUI();
-    updateTopBar();
-    updateUpgradePanel();
-    updateExtraPressUI();
-  }
-
-  // ========= EVENTS =========
-  stoneDisplayEl.addEventListener("click", mineClick);
-  stoneDisplayEl.addEventListener("touchstart", e => {
-    e.preventDefault();
-    mineClick();
-  });
-
-  buyPickaxeBtn.addEventListener("click", buyPickaxe);
-  buyAutoBtn.addEventListener("click", buyAutoMiner);
-  buyLuckBtn.addEventListener("click", buyLuck);
-  goldRushBtn.addEventListener("click", startGoldRush);
-  extraPressBtn.addEventListener("click", buyExtraPress);
-
-  // ========= INIT =========
-  spawnNewStone();
-  updateAllUI();
-  setInterval(gameLoop, 100);
-</script>
-
-</body>
-</html>
