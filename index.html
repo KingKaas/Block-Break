@@ -50,6 +50,18 @@
       transform-origin: top center;
     }
 
+    /* Screen size controls */
+    #scaleControls {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 6px;
+      font-size: 8px;
+    }
+
+    #scaleSlider {
+      width: 180px;
+    }
+
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -416,6 +428,12 @@
 
 <div id="game-wrapper">
   <div id="game">
+    <!-- NEW: user screen size control -->
+    <div id="scaleControls">
+      SCREEN SIZE:
+      <input type="range" id="scaleSlider" min="60" max="120" value="100">
+    </div>
+
     <div class="top-bar">
       <span>COINS: <span id="coins">0.0</span></span>
       <span>
@@ -551,28 +569,31 @@
 </div>
 
 <script>
-  /************* RESPONSIVE SCALE TO FIT ANY SCREEN *************/
+  /************* RESPONSIVE SCALE + USER RESIZE *************/
+  let manualScale = 1; // controlled by slider (0.6–1.2)
+
   function resizeGame() {
     const game = document.getElementById('game');
-    // logical base width/height (must match CSS width/height)
     const baseWidth  = 1000;
     const baseHeight = 640;
 
-    const availableWidth  = window.innerWidth  - 16; // padding
+    const availableWidth  = window.innerWidth  - 16;
     const availableHeight = window.innerHeight - 16;
 
-    const scale = Math.min(
+    const autoScale = Math.min(
       availableWidth  / baseWidth,
       availableHeight / baseHeight,
-      1 // never upscale above original
+      1 // never upscale original base size
     );
 
-    game.style.transform = `scale(${scale})`;
+    // final scale = auto fit * user factor, clamped to 1
+    const finalScale = Math.min(autoScale * manualScale, 1);
+
+    game.style.transform = `scale(${finalScale})`;
   }
+
   window.addEventListener('resize', resizeGame);
   window.addEventListener('orientationchange', resizeGame);
-  // run once at start
-  resizeGame();
 
   /************* GAME CODE (same logic as before) *************/
   const state = {
@@ -747,6 +768,13 @@
   const extraPressCostEl       = document.getElementById("extraPressCost");
   const extraPressBtn          = document.getElementById("extraPressBtn");
   const gameEl                 = document.getElementById("game");
+  const scaleSlider            = document.getElementById("scaleSlider");
+
+  // slider: 60–120 -> 0.6–1.2
+  scaleSlider.addEventListener("input", () => {
+    manualScale = parseInt(scaleSlider.value, 10) / 100;
+    resizeGame();
+  });
 
   function stoneById(id){return allStoneTypes.find(s=>s.id===id);}
   function unlockedStones(){return allStoneTypes.filter(s=>s.unlock());}
@@ -1179,6 +1207,7 @@
   function init(){
     spawnNewStone();
     updateAll();
+    resizeGame();      // initial fit
     setInterval(loop,100);
   }
   init();
@@ -1186,4 +1215,3 @@
 
 </body>
 </html>
-
